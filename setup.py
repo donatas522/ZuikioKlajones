@@ -11,7 +11,7 @@ class Cell:
         if self.wall:
             return cfg.wall_color
         else:
-            return 'white'
+            return cfg.background_color
     
     def load(self, data):
         if data == 'X':
@@ -70,7 +70,7 @@ class World:
         self.age = 0
         
         self.height = cfg.rows + 2 #2 because of walls from both sides
-        self.width = cfg.cols +2 
+        self.width = cfg.cols + 2 
         #self.get_file_size(filename)
         
         self.image = None
@@ -126,7 +126,7 @@ class World:
         x2 = x + dx
         y2 = y + dy
         
-        #check for grid violation
+        #check for grid violation. Cia yra zuikio zingsniai? Nes tada biski kitaip atrodo violations
         if x2 < 0:
             x2 += self.width
         if y2 < 0:
@@ -170,9 +170,9 @@ class World:
             x = cell.x
             y = cell.y
         if x is None:
-            x = random.randrange(self.width)
+            x = random.randrange(self.width) # agentas gali atsirasti tik nuo 1 iki self.width-2 indeksu cells, todel x = random.randrange(1, self.width-1)
         if y is None:
-            y = random.randrange(self.height)
+            y = random.randrange(self.height) # --|--|--
         if direction is None:
             direction = random.randrange(self.directions)
             
