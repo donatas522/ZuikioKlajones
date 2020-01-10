@@ -25,3 +25,6 @@ eat_carrot = M
 eaten_by_wolf = N//4
 move = -1
 
+# determine how many directions can agent moves.
+directions = 8   # you may change it to 4: up,down,left and right.
+lookdist = 4
