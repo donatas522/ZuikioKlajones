@@ -24,7 +24,7 @@ class Cell:
     
     def __getattr__(self, key):
         if key == 'neighbors':
-            opts = [[self.world.get_next_grid(self.x, self.y, direction)] for direction in range(self.world.directions)]
+            opts = [self.world.get_next_grid(self.x, self.y, direction) for direction in range(self.world.directions)]
             next_states = tuple(self.world.grid[y][x] for (x, y) in opts)
             return next_states
         raise AttributeError(key)
@@ -41,9 +41,7 @@ class Agent:
         self.__dict__[key] = value
     
     
-    @abstractproperty # cia reikes grizti
-    def cell(self):
-        pass #return Cell
+    
     
     
     def go_direction(self, direction):

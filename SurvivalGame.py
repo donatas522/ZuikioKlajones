@@ -31,13 +31,13 @@ wolf_lookcells_RIGHT = []
 for i in range(0, lookdist +1):
     for j in range(-lookdist, lookdist +1):
         if (abs(i) + abs(j) <= lookdist) and (i != 0 or j != 0):
-            wolf_lookcells_DOWN.append((i,j))
+            wolf_lookcells_RIGHT.append((i,j))
 
 wolf_lookcells_LEFT = []
 for i in range(-lookdist, 1):
     for j in range(-lookdist, lookdist + 1):
         if (abs(i) + abs(j) <= lookdist) and (i != 0 or j != 0):
-            wolf_lookcells_DOWN.append((i,j))
+            wolf_lookcells_LEFT.append((i,j))
                     
 
 
@@ -64,10 +64,8 @@ class Apple(setup.Agent):
     def __init__(self):
         self.cell = None
     
-    @property
-    def cell(self):
-        return self.cell
-    
+    def update(self):
+        pass   
 
 class Wolf(setup.Agent):
     def __init__(self):
@@ -110,8 +108,8 @@ class Wolf(setup.Agent):
             return random.randint(1,2)   
     
     def get_next_states(self):      
-        opts = [[self.get_cell_for_action(action)] for action in range(self.directions)]
-        return tuple(self.world.grid[y][x] for (x, y) in opts)
+        opts = [self.get_cell_for_action(action) for action in range(self.directions)]
+        return tuple(self.world.grid[y][x] for x, y in opts)
         
     
     def get_cell_for_action(self, action):
@@ -219,9 +217,7 @@ class Rabbit(setup.Agent):
         self.starved = 0
         print('rabbit initialized.')
         
-    @property
-    def cell(self):
-        return self.cell
+    
     
     def update(self):
         #calculate the state of the surround cells (field of view)
@@ -294,5 +290,6 @@ wolf = Wolf()
 rabbit = Rabbit()
 apple = Apple()
 world.add_agent(apple, cell=pickRandomLocation())
-world.add_agent(wolf)
-world.add_agent(rabbit)   
+world.add_agent(wolf, direction= 3)
+world.add_agent(rabbit)
+world.update()   
