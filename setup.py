@@ -76,12 +76,12 @@ class World:
         self.image = None
         self.rabbitWin = None
         self.wolfWin = None
-        self.resetWorld()
-        self.loadWorld()
+        self.reset_world()
+        self.load_world()
         
         
         
-    def resetWorld(self):
+    def reset_world(self):
         self.grid = [[self.make_cell(i, j) for i in range(self.width)] for j in range(self.height)]
         self.dictBackup = [[{} for i2 in range(self.width)] for j2 in range(self.height)]
         self.agents = []
@@ -96,7 +96,7 @@ class World:
         c.agents = []
         return c
     
-    def loadWorld(self):
+    def load_world(self):
         #make borders
         for i in range(self.height):
             self.grid[i][0].load('X')
@@ -147,7 +147,7 @@ class World:
             #self.display.redraw()
         else:
             for a in self.agents:
-                old_cell = a.Cell
+                old_cell = a.cell
                 a.update()             
                 #update Tkinter visual
                 #if old_cell != a.cell:

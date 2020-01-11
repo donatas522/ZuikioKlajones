@@ -56,7 +56,7 @@ class Wolf(setup.Agent):
         self.score = 0
     
     def update(self):
-        state
+        pass
         
         
         
@@ -153,4 +153,6 @@ world = setup.World()
 wolf = Wolf()
 rabbit = Rabbit()
 apple = Apple()
-    
+world.add_agent(apple, cell=pickRandomLocation())
+world.add_agent(wolf)
+world.add_agent(rabbit)   
