@@ -1,4 +1,7 @@
 
+num_episodes = 10000
+max_steps_per_episode = 100
+
 
 # ----- World Settings -----
 rows = 20 # world rows

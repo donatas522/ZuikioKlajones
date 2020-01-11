@@ -6,27 +6,30 @@ import config as cfg
 class Cell:
     def __init__(self):
         self.wall = False
-        
+    
+    
     def color(self):
         if self.wall:
             return cfg.wall_color
         else:
             return cfg.background_color
     
+    
     def load(self, data):
         if data == 'X':
             self.wall = True
         else:
             self.wall = False
-            
+    
+    
     def __getattr__(self, key):
         if key == 'neighbors':
             opts = [[self.world.get_next_grid(self.x, self.y, direction)] for direction in range(self.world.directions)]
             next_states = tuple(self.world.grid[y][x] for (x, y) in opts)
             return next_states
         raise AttributeError(key)
-    
-    
+
+
 class Agent:
     def __setattr__(self, key, value):
         if key == 'cell':
@@ -36,23 +39,25 @@ class Agent:
             if value is not None:
                 value.agents.append(self)
         self.__dict__[key] = value
-     
-    @abstractproperty 
+    
+    
+    @abstractproperty # cia reikes grizti
     def cell(self):
-        return Cell
+        pass #return Cell
+    
     
     def go_direction(self, direction):
         target = self.cell.neighbors[direction]
-        if getattr(target, 'wall', False):           
+        if getattr(target, 'wall', False):
             #if wall returns only false, rabbit might "decide" to stay near the walls
             #In which way change direction?
             #do-while change direction while cell.wall == true?
             print("hit a wall")
-            return False          
+            return False
         self.cell = target
         return True
-    
-    
+
+
 class World:
     def __init__(self, cell=None, directions=cfg.directions):
         if cell is None:
@@ -65,11 +70,11 @@ class World:
         #self.filename = filename
         
         self.grid = None
-        self.dictBackup = None
+        self.dictBackup = None # galimai neprireiks
         self.agents = []
         self.age = 0
         
-        self.height = cfg.rows + 2 #2 because of walls from both sides
+        self.height = cfg.rows + 2 # + 2 because of walls from both sides
         self.width = cfg.cols + 2 
         #self.get_file_size(filename)
         
@@ -83,11 +88,11 @@ class World:
         
     def reset_world(self):
         self.grid = [[self.make_cell(i, j) for i in range(self.width)] for j in range(self.height)]
-        self.dictBackup = [[{} for i2 in range(self.width)] for j2 in range(self.height)]
+        self.dictBackup = [[{} for i2 in range(self.width)] for j2 in range(self.height)] # gali but, kad neprieiks
         self.agents = []
         self.age = 0
-        
-        
+    
+    
     def make_cell(self, x, y):
         c = self.Cell()
         c.x = x
@@ -105,28 +110,27 @@ class World:
         for j in range(self.width):
             self.grid[0][j].load('X')
             self.grid[self.height - 1][j].load('X')
-        
-        #all other Cells by default are wall = False  
+    
     
     def get_relative_cell(self, x, y):
         return self.grid[y % self.height][x % self.width]
     
+    
     def get_cell(self, x, y):
         return self.grid[y][x]
     
-        
+    
     def get_next_grid(self, x, y, dir):
         dx = 0
         dy = 0
         
         if self.directions == 8:
-            dx, dy = [(0, -1), (1, -1), (
-                1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)][dir]  
+            dx, dy = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)][dir]
         
         x2 = x + dx
         y2 = y + dy
         
-        #check for grid violation. Cia yra zuikio zingsniai? Nes tada biski kitaip atrodo violations
+        #check for grid violation. Gali but, kad neprireiks ju
         if x2 < 0:
             x2 += self.width
         if y2 < 0:
@@ -141,7 +145,7 @@ class World:
     
     def update(self, rabbit_win=None, wolf_win=None):
         if hasattr(self.Cell, 'update'):
-            for a in self.agents:
+            for a in self.agents: # cia galimai niekada neieina algortimas
                 a.update()
             #tkinter update visual
             #self.display.redraw()
@@ -162,7 +166,7 @@ class World:
         #Tkinter visual    
         #self.display.update()
         self.age += 1
-        
+    
     
     def add_agent(self, agent, x=None, y=None, cell=None, direction=None):
         self.agents.append(agent)
@@ -170,12 +174,12 @@ class World:
             x = cell.x
             y = cell.y
         if x is None:
-            x = random.randrange(self.width) # agentas gali atsirasti tik nuo 1 iki self.width-2 indeksu cells, todel x = random.randrange(1, self.width-1)
+            x = random.randrange(1, self.width-1)
         if y is None:
-            y = random.randrange(self.height) # --|--|--
+            y = random.randrange(1, self.width-1)
         if direction is None:
             direction = random.randrange(self.directions)
-            
+        
         agent.cell = self.grid[y][x]
         agent.direction = direction
         agent.world = self
