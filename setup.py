@@ -41,18 +41,23 @@ class Agent:
         self.__dict__[key] = value
     
     
-    
-    
-    
-    def go_direction(self, direction):
-        target = self.cell.neighbors[direction]
-        if getattr(target, 'wall', False):
+    def go_direction(self, target_direction):
+        new_direction = target_direction
+        target_cell = self.cell.neighbors[new_direction]
+        if getattr(target_cell, 'wall', False):
+            if target_cell.x == (0 or self.world.width-1):
+               xdir = -target_direction[0]
+            if target_cell.y == (0 or self.world.height-1):
+               ydir = -target_direction[1]
+            new_direction = (xdir, ydir)
+            
             #if wall returns only false, rabbit might "decide" to stay near the walls
             #In which way change direction?
             #do-while change direction while cell.wall == true?
+            
             print("hit a wall")
             return False
-        self.cell = target
+        self.cell = self.cell.neighbors[new_direction]
         return True
 
 
