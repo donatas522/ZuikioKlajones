@@ -6,36 +6,37 @@ import config as cfg
 
 # Rabbit state (field of view; 40 cells in general, but can be smaller)
 # It will be updated according to rabbit's positions in the grid (for instance, field of view is smaller when near the wall)
-lookdist = cfg.lookdist
+rabbit_lookdist = cfg.rabbit_lookdist
 rabbit_lookcells = []
-for i in range(-lookdist, lookdist + 1):
-    for j in range(-lookdist, lookdist + 1):
-        if (abs(i) + abs(j) <= lookdist) and (i != 0 or j != 0):
+for i in range(-rabbit_lookdist, rabbit_lookdist + 1):
+    for j in range(-rabbit_lookdist, rabbit_lookdist + 1):
+        if (abs(i) + abs(j) <= rabbit_lookdist) and (i != 0 or j != 0):
             rabbit_lookcells.append((i,j))
 
 # Wolf's field of view. Wolf can rotate to 4 directions: up, down, right, left. Each field of view has a maximum of 20 cells
+wolf_lookdist = cfg.wolf_lookdist
 wolf_lookcells_UP = []
-for i in range(-lookdist, lookdist + 1):
-    for j in range(-lookdist, 1): # y asis i apacia, bent jau pagal get_cell_for_action
-        if (abs(i) + abs(j) <= lookdist) and (i != 0 or j != 0):
+for i in range(-wolf_lookdist, wolf_lookdist + 1):
+    for j in range(-wolf_lookdist, 1): # y asis i apacia, bent jau pagal get_cell_for_action
+        if (abs(i) + abs(j) <= wolf_lookdist) and (i != 0 or j != 0):
             wolf_lookcells_UP.append((i,j))
 
 wolf_lookcells_DOWN = []
-for i in range(-lookdist, lookdist + 1):
-    for j in range(0, lookdist + 1): # y asis i apacia, bent jau pagal get_cell_for_action
-        if (abs(i) + abs(j) <= lookdist) and (i != 0 or j != 0):
+for i in range(-wolf_lookdist, wolf_lookdist + 1):
+    for j in range(0, wolf_lookdist + 1): # y asis i apacia, bent jau pagal get_cell_for_action
+        if (abs(i) + abs(j) <= wolf_lookdist) and (i != 0 or j != 0):
             wolf_lookcells_DOWN.append((i,j))
 
 wolf_lookcells_RIGHT = []
-for i in range(0, lookdist + 1):
-    for j in range(-lookdist, lookdist + 1):
-        if (abs(i) + abs(j) <= lookdist) and (i != 0 or j != 0):
+for i in range(0, wolf_lookdist + 1):
+    for j in range(-wolf_lookdist, wolf_lookdist + 1):
+        if (abs(i) + abs(j) <= wolf_lookdist) and (i != 0 or j != 0):
             wolf_lookcells_RIGHT.append((i,j))
 
 wolf_lookcells_LEFT = []
-for i in range(-lookdist, 1):
-    for j in range(-lookdist, lookdist + 1):
-        if (abs(i) + abs(j) <= lookdist) and (i != 0 or j != 0):
+for i in range(-wolf_lookdist, 1):
+    for j in range(-wolf_lookdist, wolf_lookdist + 1):
+        if (abs(i) + abs(j) <= wolf_lookdist) and (i != 0 or j != 0):
             wolf_lookcells_LEFT.append((i,j))
 
 
@@ -49,7 +50,7 @@ def pickRandomLocationWithAverage(cell):
     #need to create new cell object and assign x y in world 
     return setup.Cell()
 
-def pickRandomLocation():
+def pickRandomLocation(): #tikriausiai nereikia tikrinimo, ar siena, nes sienos indekso niekada negaus. Gal perkelti i World?
     while 1:
         x = random.randrange(1, world.width - 1)
         y = random.randrange(1, world.height - 1)
@@ -64,6 +65,7 @@ class Apple(setup.Agent):
     
     def update(self):
         pass
+
 
 class Wolf(setup.Agent):
     def __init__(self):
@@ -285,11 +287,15 @@ class Rabbit(setup.Agent):
         return tuple([cellValue(self.world.get_relative_cell(self.cell.x + i, self.cell.y + j)) for (i,j) in rabbit_lookcells])
         
     
-world = setup.World()    
-wolf = Wolf()
+world = setup.World()
+
+apple = Apple() # turi buti multiple Apple objektai
 rabbit = Rabbit()
-apple = Apple()
+wolf = Wolf() # gali buti multiple Wolf objektai
+
+# svarbi agentu pakrovimo tvarka, nes pagal ja paskui updatinasi agentu busenos. rabbit turi pradeti zaidima
 world.add_agent(apple, cell=pickRandomLocation())
-world.add_agent(wolf, direction= 3)
-world.add_agent(rabbit)
+world.add_agent(rabbit, cell=pickRandomLocation()) # tegul skirtingu klasiu agentai pakraunami ant neuzimtu langeliu
+world.add_agent(wolf, cell=pickRandomLocation(), direction=3) # kazka reikia padaryti su direction
+
 world.update()   
