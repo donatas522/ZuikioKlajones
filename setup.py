@@ -15,11 +15,15 @@ class Cell:
             return cfg.background_color
     
     
-    def load(self, data):
-        if data == 'X':
-            self.wall = True
-        else:
-            self.wall = False
+    def makeWall(self):
+        self.wall = True
+    
+    
+    #def load(self, data):
+        #if data == 'X':
+            #self.wall = True
+        #else:
+            #self.wall = False
     
     
     def __getattr__(self, key):
@@ -62,13 +66,13 @@ class Agent:
 
 
 class World:
-    def __init__(self, cell=None, directions=cfg.directions):
+    def __init__(self, cell=None):
         if cell is None:
             cell = Cell
         self.Cell = cell
         #Tkinter implementation
         #self.display = make_display(self)
-        self.directions = directions
+        self.directions = cfg.directions
         #No file name. use from config grid size 
         #self.filename = filename
         
@@ -107,12 +111,12 @@ class World:
     def load_world(self):
         #make borders
         for i in range(self.height):
-            self.grid[i][0].load('X')
-            self.grid[i][self.width - 1].load('X')
+            self.grid[i][0].makeWall()
+            self.grid[i][self.width - 1].makeWall()
         
         for j in range(self.width):
-            self.grid[0][j].load('X')
-            self.grid[self.height - 1][j].load('X')
+            self.grid[0][j].makeWall()
+            self.grid[self.height - 1][j].makeWall()
     
     
     def get_relative_cell(self, x, y):
