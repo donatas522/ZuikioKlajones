@@ -1,8 +1,4 @@
 
-num_episodes = 10000
-max_steps_per_episode = 100
-
-
 # ----- World Settings -----
 rows = 10 # world rows
 cols = 10 # world columns
@@ -17,12 +13,22 @@ carrot_color = '#00FF00' # green
 
 
 # ----- Agent Settings -----
-rabbit_directions = 8
+# none of these parameters can be less than 1
+apple_directions = 1
+apple_actions = 1
+apple_lookdist = 1
+
+rabbit_directions = 1
 rabbit_actions = 8
 rabbit_lookdist = 4
+
 wolf_directions = 4
 wolf_actions = 7
 wolf_lookdist = 4
+
+class_directions = {'Apple': apple_directions, 'Rabbit': rabbit_directions, 'Wolf': wolf_directions} # directions for each class
+class_actions = {'Apple': apple_actions, 'Rabbit': rabbit_actions, 'Wolf': wolf_actions} # actions for each class
+class_lookdist = {'Apple': apple_lookdist, 'Rabbit': rabbit_lookdist, 'Wolf': wolf_lookdist} # lookdist for each class
 
 
 # ----- Learning Parameters -----
@@ -31,6 +37,8 @@ gamma = 0.9 # discount rate, 0 < gamma < 1
 epsilon = 1 # starting exploration rate
 min_epsilon = 0.01 # min exploration rate
 epsilon_decay = 0.001 # exploration decay rate
+num_episodes = 10000
+max_steps_per_episode = 100
 
 
 # ----- Reward/Punishement -----
