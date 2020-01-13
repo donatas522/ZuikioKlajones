@@ -1,7 +1,10 @@
+
 from abc import ABCMeta, abstractproperty
 import time
 import random
 import config as cfg
+
+
 
 class Cell:
     def __init__(self):
@@ -19,22 +22,18 @@ class Cell:
         self.wall = True
     
     
-    #def load(self, data):
-        #if data == 'X':
-            #self.wall = True
-        #else:
-            #self.wall = False
-    
-    
+    # idomu, cia gal galima tiesiog paprasta funkcija parasyti kokioj World klasej? nes dabar viskas vyksta per Cell klases neegzistuojanti atributa neighbors. Aisku, cia validu, tiesiog norisi intuityviau, juolab, kad cia susije su grido struktura
     def __getattr__(self, key):
         if key == 'neighbors':
-            opts = [self.world.get_next_grid(self.x, self.y, direction) for direction in range(self.world.directions)]
-            next_states = tuple(self.world.grid[y][x] for (x, y) in opts)
+            opts = [self.world.getNeighbor(self.x, self.y, direction) for direction in range(self.world.directions)]
+            next_states = tuple(self.world.grid[y][x] for (x,y) in opts)
             return next_states
         raise AttributeError(key)
 
 
+
 class Agent:
+    # this allows to follow the occupation of each cell with all agents
     def __setattr__(self, key, value):
         if key == 'cell':
             old = self.__dict__.get(key, None)
@@ -45,24 +44,28 @@ class Agent:
         self.__dict__[key] = value
     
     
-    def go_direction(self, target_direction):
+    # Rabbit judejimas
+    # perkelti i Rabbit klase?
+    def goDirection(self, target_direction):
         new_direction = target_direction
         target_cell = self.cell.neighbors[new_direction]
-        if getattr(target_cell, 'wall', False):
+        if getattr(target_cell, 'wall', False): # o negalima ___ if target_cell.wall == False: ? ar butu skirtumas?
             if target_cell.x == (0 or self.world.width-1):
-               xdir = -target_direction[0]
+               x = -target_direction[0]
             if target_cell.y == (0 or self.world.height-1):
-               ydir = -target_direction[1]
-            new_direction = (xdir, ydir)
+               y = -target_direction[1]
+            new_direction = (x, y)
+            self.cell = self.cell.neighbors[new_direction]
+            print("Rabbit hit a wall.")
+            return False
             
             #if wall returns only false, rabbit might "decide" to stay near the walls
             #In which way change direction?
             #do-while change direction while cell.wall == true?
-            
-            print("hit a wall")
-            return False
+            # klausimas, ar rabbit aplamai rinktusi krypti i siena? jei jau taip atsitiktu, cia padaryta paprasta inversija sienos atzvilgiu, veikia ir kampui. Cia uztenka vieno perskaiciavimo, t.y. naujai krypciai new_direction tikrinimo nereikia, nes jos kryptimi cell visada bus laisva
         self.cell = self.cell.neighbors[new_direction]
         return True
+
 
 
 class World:
@@ -70,74 +73,78 @@ class World:
         if cell is None:
             cell = Cell
         self.Cell = cell
+        
         #Tkinter implementation
         #self.display = make_display(self)
-        self.directions = cfg.directions
-        #No file name. use from config grid size 
-        #self.filename = filename
         
         self.grid = None
-        self.dictBackup = None # galimai neprireiks
+        #self.dictBackup = None # galimai neprireiks
         self.agents = []
         self.age = 0
+        self.directions = cfg.directions # neigbouring cells
+        self.class_directions = cfg.class_directions # directions for each class
+        self.class_actions = cfg.class_actions # actions for each class
+        self.class_lookdist = cfg.class_lookdist # lookdist for each class
         
         self.height = cfg.rows + 2 # + 2 because of walls from both sides
         self.width = cfg.cols + 2 
-        #self.get_file_size(filename)
         
         self.image = None
-        self.rabbitWin = None
-        self.wolfWin = None
-        self.reset_world()
-        self.load_world()
+        self.rabbit_win = None
+        self.wolf_win = None
         
-        
-        
-    def reset_world(self):
-        self.grid = [[self.make_cell(i, j) for i in range(self.width)] for j in range(self.height)]
-        self.dictBackup = [[{} for i2 in range(self.width)] for j2 in range(self.height)] # gali but, kad neprieiks
+        self.resetWorld()
+        self.loadWorld()
+    
+    
+    def resetWorld(self):
+        self.grid = [[self.makeCell(i, j) for i in range(self.width)] for j in range(self.height)]
+        #self.dictBackup = [[{} for i2 in range(self.width)] for j2 in range(self.height)] # gali but, kad neprieiks
         self.agents = []
         self.age = 0
     
     
-    def make_cell(self, x, y):
-        c = self.Cell()
-        c.x = x
-        c.y = y
-        c.world = self
-        c.agents = []
-        return c
+    def makeCell(self, x, y):
+        cell = self.Cell()
+        cell.x = x
+        cell.y = y
+        cell.world = self # each cell has a reference to the same World instance
+        cell.agents = []
+        return cell
     
-    def load_world(self):
-        #make borders
-        for i in range(self.height):
-            self.grid[i][0].makeWall()
-            self.grid[i][self.width - 1].makeWall()
+    
+    def loadWorld(self):
+        # make borders
+        for j in range(self.height):
+            self.grid[j][0].makeWall()
+            self.grid[j][self.width - 1].makeWall()
         
-        for j in range(self.width):
-            self.grid[0][j].makeWall()
-            self.grid[self.height - 1][j].makeWall()
+        for i in range(self.width):
+            self.grid[0][i].makeWall()
+            self.grid[self.height - 1][i].makeWall()
     
     
-    def get_relative_cell(self, x, y):
+    # cia grizti dar reikes, nes yra problems su field of view, kai rabbit yra netoli sienos (field of view tada sumazeja,
+    # o del sitos funkcijos veikimo, uz ribu esancios cells nusikelia i kita grido puse (kaip per snake))
+    def getRelativeCell(self, x, y):
         return self.grid[y % self.height][x % self.width]
     
     
-    def get_cell(self, x, y):
+    def getCell(self, x, y):
         return self.grid[y][x]
     
     
-    def get_next_grid(self, x, y, dir):
+    def getNeighbor(self, x, y, direction):
         dx = 0
         dy = 0
         
         if self.directions == 8:
-            dx, dy = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)][dir]
+            dx, dy = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)][direction]
         
         x2 = x + dx
         y2 = y + dy
         
-        #check for grid violation. Gali but, kad neprireiks ju
+        # check for grid violation. Gali but, kad neprireiks ju
         if x2 < 0:
             x2 += self.width
         if y2 < 0:
@@ -146,19 +153,19 @@ class World:
             x2 -= self.width
         if y2 >= self.height:
             y2 -= self.height
-            
-        return x2, y2
+        
+        return (x2, y2)
     
     
-    def update(self, rabbit_win=None, wolf_win=None):
+    def updateWorld(self, rabbit_win=None, wolf_win=None):
         if hasattr(self.Cell, 'update'):
-            for a in self.agents: # cia galimai niekada neieina algortimas
+            for a in self.agents: # cia galimai niekada neieina algortimas (kol kas)
                 a.update()
             #tkinter update visual
             #self.display.redraw()
         else:
             for a in self.agents:
-                old_cell = a.cell
+                #old_cell = a.cell # kol kas nereikia
                 a.update()             
                 #update Tkinter visual
                 #if old_cell != a.cell:
@@ -167,16 +174,17 @@ class World:
                 #self.display.redraw_cell(a.cell.x, a.cell.y)
         
         if rabbit_win:
-            self.rabbitWin = rabbit_win
+            self.rabbit_win = rabbit_win
         if wolf_win:
-            self.wolfWin = wolf_win
+            self.wolf_win = wolf_win
         #Tkinter visual    
         #self.display.update()
         self.age += 1
     
     
-    def add_agent(self, agent, x=None, y=None, cell=None, direction=None):
-        self.agents.append(agent)
+    # kol kas gerai, bet dar gal teks grizti. jei cell=None, tai nera tikrinimo, ar agentas nepastatomas i jau uzimta cell. problema apeinama, jei pridedant agentui, uzduodam cell=pickRandomLocation() is SurvivalGame.py
+    def addAgent(self, agent, x=None, y=None, cell=None, direction=None):
+        self.agents.append(agent) # list of agents in the world
         if cell is not None:
             x = cell.x
             y = cell.y
@@ -185,8 +193,16 @@ class World:
         if y is None:
             y = random.randrange(1, self.width-1)
         if direction is None:
-            direction = random.randrange(self.directions)
+            direction = self.pickRandomDirection(agent)
         
-        agent.cell = self.grid[y][x]
+        agent.cell = self.grid[y][x] # cell object of the agent
         agent.direction = direction
-        agent.world = self
+        agent.world = self # each agent has a reference to the same World instance
+    
+    
+    # direction choice depends on the class of the agent
+    def pickRandomDirection(agent):
+        class_name = agent.__class__.__name__
+        directions = self.class_directions[class_name]
+        direction = random.randrange(directions)
+        return direction
