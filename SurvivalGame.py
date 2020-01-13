@@ -5,7 +5,7 @@ import setup
 import config as cfg
 
 
-# Rabbit state (field of view; 40 cells in general)
+# Rabbit state (field of view; 40 cells in coordinates relative to rabbits position)
 # It will be updated according to rabbit's positions in the grid (for instance, field of view should be smaller when near the wall)
 rabbit_lookdist = cfg.rabbit_lookdist
 rabbit_lookcells = []
@@ -14,7 +14,7 @@ for i in range(-rabbit_lookdist, rabbit_lookdist + 1):
         if (abs(i) + abs(j) <= rabbit_lookdist) and (i != 0 or j != 0):
             rabbit_lookcells.append((i,j))
 
-# Wolf's field of view. Wolf can rotate to 4 directions: up, down, right, left. Each field of view has 20 cells in general
+# Wolf's field of view. Wolf can rotate to 4 directions: up, down, right, left. Each field of view has 20 cells
 wolf_lookdist = cfg.wolf_lookdist
 wolf_lookcells_UP = []
 for i in range(-wolf_lookdist, wolf_lookdist + 1):
@@ -42,7 +42,7 @@ for i in range(-wolf_lookdist, 1):
 
 
 def moveTowardsCenter(agent):
-    dist = 4 # move towards center per 4 cells
+    dist = cfg.move_towards_center # move towards center per 4 cells
     # locate center cell (chose one of the two for even dimensions)
     width = agent.world.width # ar galima taip kreiptis? Agent tipo objektas agent turi property world, so..?
     # man klausimas kyla toks: jei as kazka padarau klases World objektui world tiesiogiai, tai ar uzsiupdatina tokiu objektu,
@@ -59,19 +59,43 @@ def moveTowardsCenter(agent):
         center_y = (height - 1)/2
     
     # cells that can reach the center cell with dist=4 moves or less will always be moved to the center cell
-    proximity_cell_coords = [(i + center_x, j + center_y) for i in range(-dist, dist+1) for j in range(-dist, dist+1)]
-    if (agent.cell.x, agent.cell.y) in proximity_cell_coords:
+    proximity_grid = [(i + center_x, j + center_y) for i in range(-dist, dist+1) for j in range(-dist, dist+1)]
+    if (agent.cell.x, agent.cell.y) in proximity_grid:
         agent.cell = agent.world.grid[center_y][center_x] # ar cia irgi validus kreipimasis?
         return
-    
     # for cells not in proximity, search for the closest cell near the center cell (nepabaigta)
-    old_x = cell.x
-    old_y = cell.y
-    
-    
-    #not implemented
-    #need to create new cell object and assign x y in world 
-    return setup.Cell()
+    else:
+        dx = center_x - agent.cell.x
+        dy = center_y - agent.cell.y
+        k = dy/dx
+        
+        
+        
+        if (dx!=0 and dy!=0): # general line
+            if dx>0 and dy>0:
+                
+            elif dx<0 and dy>0:
+                
+            elif dx<0 and dy<0:
+                
+            else: # dx>0 and dy<0
+                
+            proximity_ring = [(i + agent.cell.x, j + agent.cell.y) for i in range(-dist, dist+1) for j in range(-dist, dist+1)]
+        elif (dx==0 and dy!=0): # vertical line
+            if dy > 0:
+                agent.cell = agent.world.grid[agent.cell.y + dist][center_x]
+                return
+            else: # dy < 0
+                agent.cell = agent.world.grid[agent.cell.y - dist][center_x]
+                return
+        else: # horizontal line
+            if dx > 0:
+                agent.cell = agent.world.grid[center_y][agent.cell.x + dist]
+                return
+            else: # dx < 0
+                agent.cell = agent.world.grid[center_y][agent.cell.x - dist]
+                return
+    #need to create new cell object and assign x y in world
 
 
 def pickRandomLocationWithAverage(cell):
@@ -277,7 +301,7 @@ class Rabbit(setup.Agent):
             if self.energy <= 0:
                 #reset last state or reset only when energy <0?
                 self.last_state = None
-                self.cell = pickRandomLocation()
+                self.cell = pickRandomLocation(agent.world)
                 return
     
             #rabbit survived, enough energy left. Move rabbit towards center
@@ -295,7 +319,7 @@ class Rabbit(setup.Agent):
         if self.energy <= 0:
             self.starved += 1
             self.last_state = None
-            self.cell = pickRandomLocation()
+            self.cell = pickRandomLocation(agent.world)
             return
         
         
@@ -331,12 +355,13 @@ class Rabbit(setup.Agent):
 world = setup.World(cell=setup.Cell)
 
 apple = Apple() # turi buti multiple Apple objektai
-rabbit = Rabbit()
 wolf = Wolf() # gali buti multiple Wolf objektai
+rabbit = Rabbit()
 
-# svarbi agentu pakrovimo tvarka, nes pagal ja paskui updatinasi agentu busenos. rabbit turi pradeti zaidima, todel jis pirmas po apple
+
+# svarbi agentu pakrovimo tvarka, nes pagal ja paskui updatinasi agentu busenos
 world.addAgent(apple, cell=pickRandomLocation(world))
-world.addAgent(rabbit, cell=pickRandomLocation(world)) # tegul visi agentai pakraunami ant neuzimtu langeliu
 world.addAgent(wolf, cell=pickRandomLocation(world))
+world.addAgent(rabbit, cell=pickRandomLocation(world)) # tegul visi agentai pakraunami ant neuzimtu langeliu
 
 world.updateWorld()
