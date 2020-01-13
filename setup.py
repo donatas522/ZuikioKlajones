@@ -201,7 +201,7 @@ class World:
     
     
     # direction choice depends on the class of the agent
-    def pickRandomDirection(agent):
+    def pickRandomDirection(self, agent):
         class_name = agent.__class__.__name__
         directions = self.class_directions[class_name]
         direction = random.randrange(directions)
