@@ -72,13 +72,14 @@ def moveTowardsCenter(agent):
         
         
         if (dx!=0 and dy!=0): # general line
-            if dx>0 and dy>0:
-                
-            elif dx<0 and dy>0:
-                
-            elif dx<0 and dy<0:
-                
-            else: # dx>0 and dy<0
+            pass
+            #if dx>0 and dy>0:
+            #    
+            #elif dx<0 and dy>0:
+            #    
+            #elif dx<0 and dy<0:
+            #    
+            #else: # dx>0 and dy<0
                 
             proximity_ring = [(i + agent.cell.x, j + agent.cell.y) for i in range(-dist, dist+1) for j in range(-dist, dist+1)]
         elif (dx==0 and dy!=0): # vertical line
@@ -117,6 +118,7 @@ def pickRandomLocation(world): # tikriausiai nereikia tikrinimo, ar siena, nes s
 class Apple(setup.Agent):
     def __init__(self):
         self.cell = None
+        self.color = cfg.carrot_color
     
     def update(self):
         pass
@@ -133,7 +135,7 @@ class Wolf(setup.Agent):
         self.world = None # class World will assign world when world.addAgent() is invoked
         self.score = 0 # number of times the rabbit was eaten
         self.color = cfg.wolf_color
-        self.last_state = None
+        self.last_cell = None
         self.last_action = None
     
     
@@ -149,7 +151,7 @@ class Wolf(setup.Agent):
             #somehow change self.direction
             #and transform new_cell according to direction
             self.direction = random.randrange(self.directions) #kaip direction nustatyti? kol kas random
-        self.last_state = self.cell
+        self.last_cell = self.cell
         self.cell = new_cell
         self.last_action = action
     
@@ -158,7 +160,7 @@ class Wolf(setup.Agent):
         if 3 in state: # if rabbit is visible, move towards rabbit
             return self.bestActionTowardsRabbit(next_states, rabbit.cell) # rabbit objektas is main?
         else:
-            return random.randint(1,2) # rabit is not in sight, just wander
+            return random.randint(0,1) # rabit is not in sight, just wander
     
     
     def getNextStates(self):
@@ -248,7 +250,6 @@ class Wolf(setup.Agent):
         i = 0
         bestDist = 1000
         for n in next_states:
-            i += 1
             if n == target: # cia gal irgi tikrinti ne Cell tipo objektus tarpusavyje, bet ju atributus x ir y?
                 best = i
                 break
@@ -258,6 +259,7 @@ class Wolf(setup.Agent):
             if best is None or dist < bestDist:
                 best = i
                 bestDist = dist
+            i += 1
         
         return best
 
@@ -281,6 +283,7 @@ class Rabbit(setup.Agent):
         self.wolf_encounter = cfg.eaten_by_wolf
         self.eaten = 0
         self.starved = 0
+        self.direction_vectors = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
         print('rabbit initialized.')
     
     
@@ -291,7 +294,7 @@ class Rabbit(setup.Agent):
         reward = cfg.move
         
         #observe the reward and update the Q-value
-        if self.cell == wolf.cell: # gal geriau lyginti x ir y?
+        if self.cell == wolf.last_cell: # gal geriau lyginti x ir y?
             self.eaten += 1
             reward = self.wolf_encounter
             if self.last_state is not None:
@@ -301,11 +304,11 @@ class Rabbit(setup.Agent):
             if self.energy <= 0:
                 #reset last state or reset only when energy <0?
                 self.last_state = None
-                self.cell = pickRandomLocation(agent.world)
+                self.cell = pickRandomLocation(self.world)
                 return
     
             #rabbit survived, enough energy left. Move rabbit towards center
-            self.cell = moveTowardsCenter(self)
+            self.cell = pickRandomLocation(self.world)# moveTowardsCenter(self)
         
         
         if self.cell == apple.cell: # gal geriau lyginti x ir y?
@@ -319,7 +322,7 @@ class Rabbit(setup.Agent):
         if self.energy <= 0:
             self.starved += 1
             self.last_state = None
-            self.cell = pickRandomLocation(agent.world)
+            self.cell = pickRandomLocation(self.world)
             return
         
         
@@ -332,6 +335,56 @@ class Rabbit(setup.Agent):
         self.last_action = action
         #here should work 'neighbors' property which updates cell coordinates in world
         self.goDirection(action)
+        
+    # Rabbit judejimas
+    # perkelti i Rabbit klase?
+    def goDirection(self, target_direction):
+        new_direction = target_direction
+        target_cell = self.getNextStates()[new_direction]
+        if getattr(target_cell, 'wall', False): # o negalima ___ if target_cell.wall == False: ? ar butu skirtumas?
+            x = self.direction_vectors[target_direction][0]
+            y = self.direction_vectors[target_direction][1]
+            if target_cell.x == (0 or self.world.width-1):
+               x = -x
+            if target_cell.y == (0 or self.world.height-1):
+               y = -y
+            new_direction = [x, y]
+            self.cell = self.getNextStates()[new_direction]
+            print("Rabbit hit a wall.")
+            return False
+            
+            #if wall returns only false, rabbit might "decide" to stay near the walls
+            #In which way change direction?
+            #do-while change direction while cell.wall == true?
+            # klausimas, ar rabbit aplamai rinktusi krypti i siena? jei jau taip atsitiktu, cia padaryta paprasta inversija sienos atzvilgiu, veikia ir kampui. Cia uztenka vieno perskaiciavimo, t.y. naujai krypciai new_direction tikrinimo nereikia, nes jos kryptimi cell visada bus laisva
+        self.cell = self.getNextStates()[new_direction]
+        return True
+    
+    def getNextStates(self):
+        opts = [self.getCellForAction(action) for action in range(self.actions)]
+        return tuple(self.world.grid[y][x] for (x,y) in opts)
+    
+    def getCellForAction(self, action):
+        dx = 0
+        dy = 0
+        
+        if self.actions == 8:
+            dx, dy = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)][action]
+        
+        x2 = self.cell.x + dx
+        y2 = self.cell.y + dy
+        
+        # check for grid violation. Gali but, kad neprireiks ju
+        if x2 < 0:
+            x2 += self.world.width
+        if y2 < 0:
+            y2 += self.world.height
+        if x2 >= self.world.width:
+            x2 -= self.world.width
+        if y2 >= self.world.height:
+            y2 -= self.world.height
+        
+        return (x2, y2)
                     
         
     def calcState(self):
@@ -341,7 +394,7 @@ class Rabbit(setup.Agent):
         #0 - empty cell
         def cellValue(cell):
             # tokie pat klausimai, kaip ir vilko funkcijos atveju
-            if wolf.cell is not None and (cell.x == wolf.cell.x and cell.y == wolf.cell.y):
+            if wolf.cell is not None and (cell.x == wolf.last_cell.x and cell.y == wolf.last_cell.y):
                 return 3 
             elif apple.cell is not None and (cell.x == apple.cell.x and cell.y == apple.cell.y):
                 return 2
@@ -364,4 +417,6 @@ world.addAgent(apple, cell=pickRandomLocation(world))
 world.addAgent(wolf, cell=pickRandomLocation(world))
 world.addAgent(rabbit, cell=pickRandomLocation(world)) # tegul visi agentai pakraunami ant neuzimtu langeliu
 
-world.updateWorld()
+world.UIdraw = False
+while 1:
+    world.updateWorld(rabbit.energy, rabbit.eaten)

@@ -2,6 +2,7 @@
 from abc import ABCMeta, abstractproperty
 import time
 import random
+import window
 import config as cfg
 
 
@@ -9,7 +10,7 @@ import config as cfg
 class Cell:
     def __init__(self):
         self.wall = False
-    
+
     
     def color(self):
         if self.wall:
@@ -23,13 +24,14 @@ class Cell:
     
     
     # idomu, cia gal galima tiesiog paprasta funkcija parasyti kokioj World klasej? nes dabar viskas vyksta per Cell klases neegzistuojanti atributa neighbors. Aisku, cia validu, tiesiog norisi intuityviau, juolab, kad cia susije su grido struktura
+'''
     def __getattr__(self, key):
         if key == 'neighbors':
             opts = [self.world.getNeighbor(self.x, self.y, direction) for direction in range(self.world.directions)]
             next_states = tuple(self.world.grid[y][x] for (x,y) in opts)
             return next_states
         raise AttributeError(key)
-
+'''
 
 
 class Agent:
@@ -42,29 +44,6 @@ class Agent:
             if value is not None:
                 value.agents.append(self)
         self.__dict__[key] = value
-    
-    
-    # Rabbit judejimas
-    # perkelti i Rabbit klase?
-    def goDirection(self, target_direction):
-        new_direction = target_direction
-        target_cell = self.cell.neighbors[new_direction]
-        if getattr(target_cell, 'wall', False): # o negalima ___ if target_cell.wall == False: ? ar butu skirtumas?
-            if target_cell.x == (0 or self.world.width-1):
-               x = -target_direction[0]
-            if target_cell.y == (0 or self.world.height-1):
-               y = -target_direction[1]
-            new_direction = (x, y)
-            self.cell = self.cell.neighbors[new_direction]
-            print("Rabbit hit a wall.")
-            return False
-            
-            #if wall returns only false, rabbit might "decide" to stay near the walls
-            #In which way change direction?
-            #do-while change direction while cell.wall == true?
-            # klausimas, ar rabbit aplamai rinktusi krypti i siena? jei jau taip atsitiktu, cia padaryta paprasta inversija sienos atzvilgiu, veikia ir kampui. Cia uztenka vieno perskaiciavimo, t.y. naujai krypciai new_direction tikrinimo nereikia, nes jos kryptimi cell visada bus laisva
-        self.cell = self.cell.neighbors[new_direction]
-        return True
 
 
 
@@ -74,9 +53,9 @@ class World:
             cell = Cell
         self.Cell = cell
         
-        #Tkinter implementation
-        #self.display = make_display(self)
-        
+        #pygame
+        self.display = makeDisplay(self)
+        self.UIdraw = True
         self.grid = None
         #self.dictBackup = None # galimai neprireiks
         self.agents = []
@@ -95,6 +74,7 @@ class World:
         
         self.resetWorld()
         self.loadWorld()
+        self.display.activate()
     
     
     def resetWorld(self):
@@ -121,7 +101,7 @@ class World:
         
         for i in range(self.width):
             self.grid[0][i].makeWall()
-            self.grid[self.height - 1][i].makeWall()
+            self.grid[self.height-1][i].makeWall()
     
     
     # cia grizti dar reikes, nes yra problems su field of view, kai rabbit yra netoli sienos (field of view tada sumazeja,
@@ -134,28 +114,6 @@ class World:
         return self.grid[y][x]
     
     
-    def getNeighbor(self, x, y, direction):
-        dx = 0
-        dy = 0
-        
-        if self.directions == 8:
-            dx, dy = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)][direction]
-        
-        x2 = x + dx
-        y2 = y + dy
-        
-        # check for grid violation. Gali but, kad neprireiks ju
-        if x2 < 0:
-            x2 += self.width
-        if y2 < 0:
-            y2 += self.height
-        if x2 >= self.width:
-            x2 -= self.width
-        if y2 >= self.height:
-            y2 -= self.height
-        
-        return (x2, y2)
-    
     
     def updateWorld(self, rabbit_win=None, wolf_win=None):
         if hasattr(self.Cell, 'update'):
@@ -166,7 +124,9 @@ class World:
         else:
             for a in self.agents:
                 #old_cell = a.cell # kol kas nereikia
-                a.update()             
+                a.update()
+            if self.UIdraw:
+                self.display.redraw()             
                 #update Tkinter visual
                 #if old_cell != a.cell:
                 #    self.display.redraw_cell(old_cell.x, old_cell.y)
@@ -178,7 +138,8 @@ class World:
         if wolf_win:
             self.wolf_win = wolf_win
         #Tkinter visual    
-        #self.display.update()
+        if self.UIdraw:
+            self.display.update()
         self.age += 1
     
     
@@ -206,3 +167,8 @@ class World:
         directions = self.class_directions[class_name]
         direction = random.randrange(directions)
         return direction
+
+def makeDisplay(world):
+    d = window.Window()
+    d.world = world
+    return d
