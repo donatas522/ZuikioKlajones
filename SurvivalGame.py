@@ -41,13 +41,10 @@ for i in range(-wolf_lookdist, 1):
             wolf_lookcells_LEFT.append((i,j))
 
 
-def moveTowardsCenter(agent):
+def moveTowardsCenter(agent, verbose=False):
     dist = cfg.move_towards_center # move towards center per 4 cells
     # locate center cell (chose one of the two for even dimensions)
-    width = agent.world.width # ar galima taip kreiptis? Agent tipo objektas agent turi property world, so..?
-    # man klausimas kyla toks: jei as kazka padarau klases World objektui world tiesiogiai, tai ar uzsiupdatina tokiu objektu,
-    # kaip pvz rabbit ar wolf, property world? nes jei tai yra tiesiog nuoroda i objekta world, tai kaip ir turetu uzsiupdatint.
-    # P.S.: paskaiciau nete, tai ale validu, bet still palieku kaip klausima
+    width = agent.world.width
     height = agent.world.height
     if (width % 2 == 0):
         center_x = width/2 - 1
@@ -57,45 +54,94 @@ def moveTowardsCenter(agent):
         center_y = height/2 - 1
     else:
         center_y = (height - 1)/2
+    center_x = int(center_x)
+    center_y = int(center_y)
+    
+    if verbose:
+        print('World dimensions: {rows} rows by {cols} columns (without walls)'.format(rows=height-2, cols=width-2))
+        print('Moving distance towards center cell after encounter with wolf: {0}'.format(dist))
+        print('Center cell coords: ({x},{y})'.format(x=center_x, y=center_y))
+        print('Agent\'s cell coords before moving: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
     
     # cells that can reach the center cell with dist=4 moves or less will always be moved to the center cell
     proximity_grid = [(i + center_x, j + center_y) for i in range(-dist, dist+1) for j in range(-dist, dist+1)]
     if (agent.cell.x, agent.cell.y) in proximity_grid:
         agent.cell = agent.world.grid[center_y][center_x] # ar cia irgi validus kreipimasis?
+        if verbose:
+            print('Agent is in the proximity of the center cell')
+            print('Agent\'s cell coords after moving: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
         return
     # for cells not in proximity, search for the closest cell near the center cell (nepabaigta)
     else:
-        dx = center_x - agent.cell.x
-        dy = center_y - agent.cell.y
-        k = dy/dx
-        
-        
-        
-        if (dx!=0 and dy!=0): # general line
+        if verbose:
+            print('Agent is not in the proximity of the center cell. Calculating agent\'s new cell coords')
+        dx = agent.cell.x - center_x
+        dy = agent.cell.y - center_y
+        if (dx!=0 and dy!=0): # general line. Cia butu galima funkcija parasyt, maziau eiluciu butu, bet kol kas palieku
+            k = dy/dx
+            a = k
+            b = -1
+            c = center_y - k*center_x
+            norm = 1 / (a**2 + b**2)**0.5
             if dx>0 and dy>0:
-                
+                proximity_ring_quarter = [(i + agent.cell.x, -dist + agent.cell.y) for i in range(-(dist-1), 1)] + [(-dist + agent.cell.x, j + agent.cell.y) for j in range(-(dist-1), 1)] + [(-dist + agent.cell.x, -dist + agent.cell.y)]
+                distances = [norm * abs(a*x + b*y + c) for (x,y) in proximity_ring_quarter]
+                (x,y) = proximity_ring_quarter[min(range(len(distances)), key=distances.__getitem__)]
+                agent.cell = agent.world.grid[y][x]
+                if verbose:
+                    print(proximity_ring_quarter)
+                    print('Agent\'s new coords: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
+                return
             elif dx<0 and dy>0:
-                
+                proximity_ring_quarter = [(i + agent.cell.x, -dist + agent.cell.y) for i in range(dist)] + [(dist + agent.cell.x, j + agent.cell.y) for j in range(-(dist-1), 1)] + [(dist + agent.cell.x, -dist + agent.cell.y)]
+                distances = [norm * abs(a*x + b*y + c) for (x,y) in proximity_ring_quarter]
+                (x,y) = proximity_ring_quarter[min(range(len(distances)), key=distances.__getitem__)]
+                agent.cell = agent.world.grid[y][x]
+                if verbose:
+                    print(proximity_ring_quarter)
+                    print('Agent\'s new coords: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
+                return
             elif dx<0 and dy<0:
-                
+                proximity_ring_quarter = [(i + agent.cell.x, dist + agent.cell.y) for i in range(dist)] + [(dist + agent.cell.x, j + agent.cell.y) for j in range(dist)] + [(dist + agent.cell.x, dist + agent.cell.y)]
+                distances = [norm * abs(a*x + b*y + c) for (x,y) in proximity_ring_quarter]
+                (x,y) = proximity_ring_quarter[min(range(len(distances)), key=distances.__getitem__)]
+                agent.cell = agent.world.grid[y][x]
+                if verbose:
+                    print(proximity_ring_quarter)
+                    print('Agent\'s new coords: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
+                return
             else: # dx>0 and dy<0
-                
-            proximity_ring = [(i + agent.cell.x, j + agent.cell.y) for i in range(-dist, dist+1) for j in range(-dist, dist+1)]
+                proximity_ring_quarter = [(i + agent.cell.x, dist + agent.cell.y) for i in range(-(dist-1), 1)] + [(-dist + agent.cell.x, j + agent.cell.y) for j in range(dist)] + [(-dist + agent.cell.x, dist + agent.cell.y)]
+                distances = [norm * abs(a*x + b*y + c) for (x,y) in proximity_ring_quarter]
+                (x,y) = proximity_ring_quarter[min(range(len(distances)), key=distances.__getitem__)]
+                agent.cell = agent.world.grid[y][x]
+                if verbose:
+                    print('Agent\'s new coords: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
+                return
+        
         elif (dx==0 and dy!=0): # vertical line
             if dy > 0:
-                agent.cell = agent.world.grid[agent.cell.y + dist][center_x]
+                agent.cell = agent.world.grid[agent.cell.y - dist][center_x]
+                if verbose:
+                    print('Agent\'s new coords: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
                 return
             else: # dy < 0
-                agent.cell = agent.world.grid[agent.cell.y - dist][center_x]
+                agent.cell = agent.world.grid[agent.cell.y + dist][center_x]
+                if verbose:
+                    print('Agent\'s new coords: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
                 return
+        
         else: # horizontal line
             if dx > 0:
-                agent.cell = agent.world.grid[center_y][agent.cell.x + dist]
+                agent.cell = agent.world.grid[center_y][agent.cell.x - dist]
+                if verbose:
+                    print('Agent\'s new coords: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
                 return
             else: # dx < 0
-                agent.cell = agent.world.grid[center_y][agent.cell.x - dist]
+                agent.cell = agent.world.grid[center_y][agent.cell.x + dist]
+                if verbose:
+                    print('Agent\'s new coords: ({x},{y})'.format(x=agent.cell.x, y=agent.cell.y))
                 return
-    #need to create new cell object and assign x y in world
 
 
 def pickRandomLocationWithAverage(cell):
