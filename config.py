@@ -1,10 +1,11 @@
 
 # ----- World Settings -----
-rows = 10 # world rows
-cols = 10 # world columns
+rows = 15 # world rows
+cols = 15 # world columns
 cell_size = 50
 N = rows * cols # number of world cells
-M = 10 # number of apples
+M = 5 # number of apples
+average_distance = 0.8 * M
 directions = 8 # neigbouring cells
 background_color = '#FFFFFF' # white
 wall_color = '#000000' # black

@@ -3,7 +3,7 @@ import random
 import qlearn
 import setup
 import config as cfg
-
+import math
 
 # Rabbit state (field of view; 40 cells in coordinates relative to rabbits position)
 # It will be updated according to rabbit's positions in the grid (for instance, field of view should be smaller when near the wall)
@@ -147,7 +147,21 @@ def moveTowardsCenter(agent, verbose=False):
 def pickRandomLocationWithAverage(cell):
     #not implemented
     #need to create new cell object and assign x y in world 
-    return setup.Cell()
+    theta = 2 * math.pi * random.uniform(0, 1)       #angle is uniform
+    r = cfg.average_distance * cfg.M * math.sqrt(random.uniform(0, 1))   #radius proportional to sqrt(U), U~U(0,1) */
+    dx = int(r*math.cos(theta))
+    dy = int(r*math.sin(theta))
+    x2 = cell.x + dx
+    y2 = cell.y + dy
+    if x2 <= 0:
+        x2 = 1
+    if y2 <= 0:
+        y2 = 1
+    if x2 >= world.width - 2:
+        x2 = world.width - 2
+    if y2 >= world.height - 2:
+        y2 = world.height - 2
+    return world.getCell(x2, y2)
 
 
 
@@ -299,7 +313,7 @@ class Wolf(setup.Agent):
             return
         best = None
         i = 2
-        bestDist = 1000
+        bestDist = cfg.N #some random big number
         #discard states when rabbit is not in sight
         for n in next_states[2:]:
             if n == target: # cia gal irgi tikrinti ne Cell tipo objektus tarpusavyje, bet ju atributus x ir y?
@@ -353,21 +367,21 @@ class Rabbit(setup.Agent):
                 self.ai.learnQ(self.last_state, self.last_action, state, reward)
             
             self.energy -= self.wolf_encounter
-            if self.energy <= 0:
-                #reset last state or reset only when energy <0?
-                self.last_state = None
-                self.cell = self.world.pickRandomLocation()
-                return
+            #if self.energy <= 0:
+            #    #reset last state or reset only when energy <0?
+            #    self.last_state = None
+            #    self.cell = self.world.pickRandomLocation()
+            #    return
     
             #rabbit survived, enough energy left. Move rabbit towards center
-            self.cell = self.world.pickRandomLocation()# moveTowardsCenter(self)
+            moveTowardsCenter(self)# moveTowardsCenter(self)
                
         elif self.cell == apple.cell: # gal geriau lyginti x ir y?
             self.energy += self.M
             reward = self.M
             if self.last_state is not None:
                 self.ai.learnQ(self.last_state, self.last_action, state, reward)
-            #apple.cell = self.world.pickRandomLocationWithAverage(apple.cell)
+            apple.cell = pickRandomLocationWithAverage(apple.cell)
         
         else:
             self.energy += reward
@@ -380,6 +394,7 @@ class Rabbit(setup.Agent):
             self.last_state = None
             self.cell = self.world.pickRandomLocation()
             self.energy = cfg.N
+            self.ai.epsilonDecay(self.starved)
             return
         
         
@@ -392,6 +407,7 @@ class Rabbit(setup.Agent):
         self.last_action = action
         #here should work 'neighbors' property which updates cell coordinates in world
         self.goDirection(action)
+        #self.ai.epsilonDecay()
         
     # Rabbit judejimas
     # perkelti i Rabbit klase?
