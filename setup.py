@@ -114,27 +114,21 @@ class World:
             self.grid[self.height-1][i].makeWall()
     
     
+    #def getCell(self, x, y):
+    #    return self.grid[y][x]
+    
+    
     def getCell(self, x, y):
-        return self.grid[y][x]
-    
-    
-    def getRelativeCell(self, x, y):
         w = self.width
         h = self.height
         
-        if x < 0:
-            x = 0
-        elif x > w-1:
-            x = w-1
-        else: # 0 <= x <= w-1
-            pass
+        if x < 0: x = 0
+        elif x > w-1: x = w-1
+        else: pass # 0 <= x <= w-1
         
-        if y < 0:
-            y = 0
-        elif y > h-1:
-            y = h-1
-        else: # 0 <= y <= h-1
-            pass
+        if y < 0: y = 0
+        elif y > h-1: y = h-1
+        else: pass # 0 <= y <= h-1
         
         return self.grid[y][x]
     
