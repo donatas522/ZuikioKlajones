@@ -79,10 +79,12 @@ class World:
         self.image = None
         self.rabbit_win = None
         self.wolf_win = None
+        self.rabbit_energy = None
+        self.rabbit_starved = None
         
         self.resetWorld()
         self.loadWorld()
-        self.display.activate()
+        self.display.activate(size=cfg.cell_size)
     
     
     def resetWorld(self):
@@ -122,7 +124,7 @@ class World:
         return self.grid[y % self.height][x % self.width]
     
     
-    def updateWorld(self, rabbit_win=None, wolf_win=None):
+    def updateWorld(self, rabbit_energy=None, wolf_win=None, rabbit_starved=None):
         if hasattr(self.Cell, 'update'):
             for a in self.agents: # cia galimai niekada neieina algortimas (kol kas)
                 a.update()
@@ -140,10 +142,12 @@ class World:
                 #    
                 #self.display.redraw_cell(a.cell.x, a.cell.y)
         
-        if rabbit_win:
-            self.rabbit_win = rabbit_win
+        if rabbit_energy:
+            self.rabbit_energy = rabbit_energy
         if wolf_win:
             self.wolf_win = wolf_win
+        if rabbit_starved:
+            self.rabbit_starved = rabbit_starved
         #Tkinter visual    
         if self.UIdraw:
             self.display.update()

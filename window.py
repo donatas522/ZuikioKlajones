@@ -18,6 +18,7 @@ class Window:
     def activate(self, size=50):
         self.size = size
         pygame.init()
+        self.myfont = pygame.font.SysFont('Comic Sans MS', 12)
         w = (cfg.cols+2) * size
         h = (cfg.rows+2) * size
         self.screen =  pygame.display.set_mode((w, h))
@@ -29,13 +30,13 @@ class Window:
         self.screen.fill(self.defaultColour)
         for row in self.world.grid:
             for cell in row:
+                if cell.wall:
+                    c = pygame.Color(cfg.wall_color)
+                
                 if len(cell.agents) > 0:
                     c = self.getColour(cell.agents[0])
                 else:
                     c = self.getColour(cell)
-                
-                if cell.wall:
-                    c = pygame.Color(cfg.wall_color)
                 
                 if c != self.defaultColour:
                     try:                      
@@ -94,16 +95,20 @@ class Window:
             return
         self.title = title
         title += ' %s' % self.makeTitle(self.world)
-        if pygame.display.get_caption()[0] != title:
-            pygame.display.set_caption(title)
+        textsurface = self.myfont.render(title, False, self.defaultColour)
+        self.screen.blit(textsurface,(0,0))
+        #if pygame.display.get_caption()[0] != title:
+        #    pygame.display.set_caption(title)
     
     def makeTitle(self, world):
-        text = 'age: %d' % world.age
+        text = 'age: %d\n' % world.age
         extra = []
-        if world.rabbit_win:
-            extra.append('energy=%d' % world.rabbit_win)
+        if world.rabbit_energy:
+            extra.append('energy=%d' % world.rabbit_energy)
+        if world.rabbit_starved:
+            extra.append('starved=%d' % world.rabbit_starved)
         if world.wolf_win:
-            extra.append('wolf_win=%d' % world.wolf_win)
+            extra.append('wolf_win=%d' % world.wolf_win)      
         if self.paused:
             extra.append('paused')
         if self.updateEvery != 1:

@@ -345,20 +345,25 @@ class Rabbit(setup.Agent):
     
             #rabbit survived, enough energy left. Move rabbit towards center
             self.cell = self.world.pickRandomLocation()# moveTowardsCenter(self)
-        
-        
-        if self.cell == apple.cell: # gal geriau lyginti x ir y?
+               
+        elif self.cell == apple.cell: # gal geriau lyginti x ir y?
             self.energy += self.M
             reward = self.M
             if self.last_state is not None:
                 self.ai.learnQ(self.last_state, self.last_action, state, reward)
             #apple.cell = self.world.pickRandomLocationWithAverage(apple.cell)
         
+        else:
+            self.energy += reward
+            if self.last_state is not None:
+                self.ai.learnQ(self.last_state, self.last_action, state, reward)
+        
         
         if self.energy <= 0:
             self.starved += 1
             self.last_state = None
             self.cell = self.world.pickRandomLocation()
+            self.energy = cfg.N
             return
         
         
@@ -455,4 +460,4 @@ world.addAgent(rabbit, cell=world.pickRandomLocation()) # tegul visi agentai pak
 
 #world.UIdraw = False
 while 1:
-    world.updateWorld(rabbit.energy, rabbit.eaten)
+    world.updateWorld(rabbit.energy, rabbit.eaten, rabbit.starved)

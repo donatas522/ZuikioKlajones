@@ -1,7 +1,8 @@
 
 # ----- World Settings -----
 rows = 10 # world rows
-cols = 20 # world columns
+cols = 10 # world columns
+cell_size = 50
 N = rows * cols # number of world cells
 M = 10 # number of apples
 directions = 8 # neigbouring cells
