@@ -361,7 +361,7 @@ class Rabbit(setup.Agent):
             reward = self.M
             if self.last_state is not None:
                 self.ai.learnQ(self.last_state, self.last_action, state, reward)
-            apple.cell = pickRandomLocationWithAverage(apple.cell)
+            #apple.cell = pickRandomLocationWithAverage(apple.cell)
         
         
         if self.energy <= 0:
@@ -393,7 +393,7 @@ class Rabbit(setup.Agent):
                x = -x
             if target_cell.y == (0 or self.world.height-1):
                y = -y
-            new_direction = [x, y]
+            new_direction = self.direction_vectors.index((x,y))
             self.cell = self.getNextStates()[new_direction]
             print("Rabbit hit a wall.")
             return False
@@ -462,6 +462,6 @@ world.addAgent(apple, cell=pickRandomLocation(world))
 world.addAgent(wolf, cell=pickRandomLocation(world))
 world.addAgent(rabbit, cell=pickRandomLocation(world)) # tegul visi agentai pakraunami ant neuzimtu langeliu
 
-world.UIdraw = False
+#world.UIdraw = False
 while 1:
     world.updateWorld(rabbit.energy, rabbit.eaten)

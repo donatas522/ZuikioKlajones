@@ -1,13 +1,14 @@
 import pygame
 import config as cfg
 import sys
+import time
 
 class Window:
     activated = False
     paused = False
     title = ''
-    updateEvery = 2**13
-    delay = 0
+    updateEvery = 1
+    delay = 10
     clock = pygame.time.Clock()
     
     def __init__(self):
@@ -68,7 +69,9 @@ class Window:
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.pause()
         pygame.display.flip()
-        self.clock.tick(60)
+        if self.delay > 0:
+            time.sleep(self.delay * 0.1)
+        #self.clock.tick(60)
             
     def pause(self, event=None):
         self.paused = not self.paused
