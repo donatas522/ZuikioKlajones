@@ -150,15 +150,6 @@ def pickRandomLocationWithAverage(cell):
     return setup.Cell()
 
 
-def pickRandomLocation(world): # tikriausiai nereikia tikrinimo, ar siena, nes sienos indekso niekada negaus. Gal perkelti i World?
-    while 1:
-        x = random.randrange(1, world.width-1)
-        y = random.randrange(1, world.height-1)
-        cell = world.getCell(x, y)
-        if not (cell.wall or len(cell.agents) > 0): # chosen cell has to be a non-wall and has to be empty (no agents)
-            return cell
-
-
 
 class Apple(setup.Agent):
     def __init__(self):
@@ -349,11 +340,11 @@ class Rabbit(setup.Agent):
             if self.energy <= 0:
                 #reset last state or reset only when energy <0?
                 self.last_state = None
-                self.cell = pickRandomLocation(self.world)
+                self.cell = self.world.pickRandomLocation()
                 return
     
             #rabbit survived, enough energy left. Move rabbit towards center
-            self.cell = pickRandomLocation(self.world)# moveTowardsCenter(self)
+            self.cell = self.world.pickRandomLocation()# moveTowardsCenter(self)
         
         
         if self.cell == apple.cell: # gal geriau lyginti x ir y?
@@ -361,13 +352,13 @@ class Rabbit(setup.Agent):
             reward = self.M
             if self.last_state is not None:
                 self.ai.learnQ(self.last_state, self.last_action, state, reward)
-            #apple.cell = pickRandomLocationWithAverage(apple.cell)
+            #apple.cell = self.world.pickRandomLocationWithAverage(apple.cell)
         
         
         if self.energy <= 0:
             self.starved += 1
             self.last_state = None
-            self.cell = pickRandomLocation(self.world)
+            self.cell = self.world.pickRandomLocation()
             return
         
         
@@ -458,9 +449,9 @@ rabbit = Rabbit()
 
 
 # svarbi agentu pakrovimo tvarka, nes pagal ja paskui updatinasi agentu busenos
-world.addAgent(apple, cell=pickRandomLocation(world))
-world.addAgent(wolf, cell=pickRandomLocation(world))
-world.addAgent(rabbit, cell=pickRandomLocation(world)) # tegul visi agentai pakraunami ant neuzimtu langeliu
+world.addAgent(apple, cell=world.pickRandomLocation())
+world.addAgent(wolf, cell=world.pickRandomLocation())
+world.addAgent(rabbit, cell=world.pickRandomLocation()) # tegul visi agentai pakraunami ant neuzimtu langeliu
 
 #world.UIdraw = False
 while 1:

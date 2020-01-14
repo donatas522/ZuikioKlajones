@@ -7,6 +7,13 @@ import config as cfg
 
 
 
+def makeDisplay(world):
+    d = window.Window()
+    d.world = world
+    return d
+
+
+
 class Cell:
     def __init__(self):
         self.wall = False
@@ -53,9 +60,10 @@ class World:
             cell = Cell
         self.Cell = cell
         
-        #pygame
+        # pygame
         self.display = makeDisplay(self)
         self.UIdraw = True
+        
         self.grid = None
         #self.dictBackup = None # galimai neprireiks
         self.agents = []
@@ -89,7 +97,7 @@ class World:
         cell.x = x
         cell.y = y
         cell.world = self # each cell has a reference to the same World instance
-        cell.agents = []
+        cell.agents = [] # each cell has a list of references to different Agent instances, which are on the cell
         return cell
     
     
@@ -104,15 +112,14 @@ class World:
             self.grid[self.height-1][i].makeWall()
     
     
+    def getCell(self, x, y):
+        return self.grid[y][x]
+    
+    
     # cia grizti dar reikes, nes yra problems su field of view, kai rabbit yra netoli sienos (field of view tada sumazeja,
     # o del sitos funkcijos veikimo, uz ribu esancios cells nusikelia i kita grido puse (kaip per snake))
     def getRelativeCell(self, x, y):
         return self.grid[y % self.height][x % self.width]
-    
-    
-    def getCell(self, x, y):
-        return self.grid[y][x]
-    
     
     
     def updateWorld(self, rabbit_win=None, wolf_win=None):
@@ -126,7 +133,7 @@ class World:
                 #old_cell = a.cell # kol kas nereikia
                 a.update()
             if self.UIdraw:
-                self.display.redraw()             
+                self.display.redraw()           
                 #update Tkinter visual
                 #if old_cell != a.cell:
                 #    self.display.redraw_cell(old_cell.x, old_cell.y)
@@ -143,7 +150,7 @@ class World:
         self.age += 1
     
     
-    # kol kas gerai, bet dar gal teks grizti. jei cell=None, tai nera tikrinimo, ar agentas nepastatomas i jau uzimta cell. problema apeinama, jei pridedant agentui, uzduodam cell=pickRandomLocation() is SurvivalGame.py
+    # kol kas gerai, bet dar gal teks grizti. jei cell=None, tai nera tikrinimo, ar agentas nepastatomas i jau uzimta cell. problema apeinama, jei pridedant agentui, uzduodam cell=self.pickRandomLocation()
     def addAgent(self, agent, x=None, y=None, cell=None, direction=None):
         self.agents.append(agent) # list of agents in the world
         if cell is not None:
@@ -167,8 +174,12 @@ class World:
         directions = self.class_directions[class_name]
         direction = random.randrange(directions)
         return direction
-
-def makeDisplay(world):
-    d = window.Window()
-    d.world = world
-    return d
+    
+    
+    def pickRandomLocation(self): # tikriausiai nereikia tikrinimo, ar siena, nes sienos indekso niekada negaus
+        while True:
+            x = random.randrange(1, self.width-1)
+            y = random.randrange(1, self.height-1)
+            cell = self.getCell(x, y)
+            if not (cell.wall or len(cell.agents) > 0): # chosen cell has to be a non-wall and has to be empty (no agents)
+                return cell
