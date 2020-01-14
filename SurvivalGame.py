@@ -183,10 +183,15 @@ class Wolf(setup.Agent):
         action = self.chooseAction(state, next_states)
         new_cell = next_states[action]
         if new_cell.wall:
+            
+            self.direction = (int) (self.direction + self.directions/2) % self.directions
+            next_states = self.getNextStates()
+            #reflected_action = action.index((x,y))
+            new_cell = next_states[action]
             #"reflect from the wall"
             #somehow change self.direction
             #and transform new_cell according to direction
-            self.direction = random.randrange(self.directions) #kaip direction nustatyti? kol kas random
+            #self.direction = random.randrange(self.directions) #kaip direction nustatyti? kol kas random
         self.last_cell = self.cell
         self.cell = new_cell
         self.last_action = action
@@ -233,13 +238,13 @@ class Wolf(setup.Agent):
         # 0 yra wall index, self.world.width-1 irgi wall index, todel juos irgi reikia iskaityt
         # cia dar reikes sugrizti
         if x2 <= 0:
-            x2 = 1
+            x2 = 0
         if y2 <= 0:
-            y2 = 1
+            y2 = 0
         if x2 >= self.world.width - 1:
-            x2 = self.world.width - 2
+            x2 = self.world.width - 1
         if y2 >= self.world.height - 1:
-            y2 = self.world.height - 2
+            y2 = self.world.height - 1
         
         return (x2, y2)
     
@@ -283,9 +288,10 @@ class Wolf(setup.Agent):
         if self.cell == target: # ar cia butinas sitas tikrinimas? update pradzioje patikrinam, o iki chooseAction jokio action vilkas neatlieka
             return
         best = None
-        i = 0
+        i = 2
         bestDist = 1000
-        for n in next_states:
+        #discard states when rabbit is not in sight
+        for n in next_states[2:]:
             if n == target: # cia gal irgi tikrinti ne Cell tipo objektus tarpusavyje, bet ju atributus x ir y?
                 best = i
                 break

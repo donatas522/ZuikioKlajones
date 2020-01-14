@@ -121,6 +121,13 @@ class World:
     # cia grizti dar reikes, nes yra problems su field of view, kai rabbit yra netoli sienos (field of view tada sumazeja,
     # o del sitos funkcijos veikimo, uz ribu esancios cells nusikelia i kita grido puse (kaip per snake))
     def getRelativeCell(self, x, y):
+        if x > self.width or y > self.height:
+            x = self.width
+            y = self.height
+        
+        if x < self.width or y < self.height:
+            x = 0
+            y = 0            
         return self.grid[y % self.height][x % self.width]
     
     

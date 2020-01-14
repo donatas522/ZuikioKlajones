@@ -67,7 +67,7 @@ class Window:
     def update(self):
         if not self.activated:
             return
-        if self.world.age % self.update_every != 0 and not self.paused:
+        if (self.world.age % self.update_every) != 0 and not self.paused:
             return
         self.setTitle(self.title)
         for event in pygame.event.get():
@@ -110,7 +110,7 @@ class Window:
     
     
     def makeTitle(self, world):
-        text = 'age: %d\n' % world.age
+        text = 'age: %d' % world.age
         extra = []
         if world.rabbit_energy:
             extra.append('energy=%d' % world.rabbit_energy)
@@ -118,12 +118,12 @@ class Window:
             extra.append('starved=%d' % world.rabbit_starved)
         if world.wolf_win:
             extra.append('wolf_win=%d' % world.wolf_win)      
-        if self.paused:
-            extra.append('paused')
         if self.update_every != 1:
             extra.append('skip=%d' % self.update_every)
         if self.delay > 0:
             extra.append('delay=%d' % self.delay)
+        if self.paused:
+            extra.append('paused')
 
         if len(extra) > 0:
             text += ' [%s]' % ', '.join(extra)
