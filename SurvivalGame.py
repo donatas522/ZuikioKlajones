@@ -182,9 +182,13 @@ class Wolf(setup.Agent):
         next_states = self.getNextStates()
         action = self.chooseAction(state, next_states)
         new_cell = next_states[action]
-        if new_cell.wall:
-            
-            self.direction = (int) (self.direction + self.directions/2) % self.directions
+        if new_cell.wall:         
+            if action in (0, 5, 6):
+                self.direction = (int) (self.direction - 1) % self.directions
+            if action in (1, 3, 4):
+                self.direction = (int) (self.direction + 1) % self.directions                
+            if action == 2:
+                self.direction = (int) (self.direction + self.directions/2) % self.directions
             next_states = self.getNextStates()
             #reflected_action = action.index((x,y))
             new_cell = next_states[action]
@@ -201,6 +205,8 @@ class Wolf(setup.Agent):
         if 3 in state: # if rabbit is visible, move towards rabbit
             return self.bestActionTowardsRabbit(next_states, rabbit.cell) # rabbit objektas is main?
         else:
+            if self.last_action == 0 or self.last_action == 1:
+                return self.last_action
             return random.randint(0,1) # rabit is not in sight, just wander
     
     
@@ -275,13 +281,13 @@ class Wolf(setup.Agent):
         # karta susidurs su nauja busena (state). busenu dydis turi buti pakankamai mazas, kad Q-Learning sudarytu Q-table,
         # kas ir yra triusio isgyvenimo strategija.
         if (self.direction == 0):
-            return tuple(cellValue(self.world.getRelativeCell(self.cell.x + i, self.cell.y + j)) for (i,j) in wolf_lookcells_UP)
+            return tuple(cellValue(self.world.getCell(self.cell.x + i, self.cell.y + j)) for (i,j) in wolf_lookcells_UP)
         if (self.direction == 1):
-            return tuple(cellValue(self.world.getRelativeCell(self.cell.x + i, self.cell.y + j)) for (i,j) in wolf_lookcells_RIGHT)
+            return tuple(cellValue(self.world.getCell(self.cell.x + i, self.cell.y + j)) for (i,j) in wolf_lookcells_RIGHT)
         if (self.direction == 2):
-            return tuple(cellValue(self.world.getRelativeCell(self.cell.x + i, self.cell.y + j)) for (i,j) in wolf_lookcells_DOWN)
+            return tuple(cellValue(self.world.getCell(self.cell.x + i, self.cell.y + j)) for (i,j) in wolf_lookcells_DOWN)
         if (self.direction == 3):
-            return tuple(cellValue(self.world.getRelativeCell(self.cell.x + i, self.cell.y + j)) for (i,j) in wolf_lookcells_LEFT)
+            return tuple(cellValue(self.world.getCell(self.cell.x + i, self.cell.y + j)) for (i,j) in wolf_lookcells_LEFT)
         
         
     def bestActionTowardsRabbit(self, next_states, target):
@@ -448,7 +454,7 @@ class Rabbit(setup.Agent):
             else:
                 return 1 if cell.wall else 0
         
-        return tuple(cellValue(self.world.getRelativeCell(self.cell.x + i, self.cell.y + j)) for (i,j) in rabbit_lookcells)
+        return tuple(cellValue(self.world.getCell(self.cell.x + i, self.cell.y + j)) for (i,j) in rabbit_lookcells)
 
 
 
