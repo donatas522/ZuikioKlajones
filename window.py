@@ -10,7 +10,7 @@ class Window:
     paused = False
     title = ''
     update_every = 1
-    delay = 10
+    delay = 1
     size = 50
     clock = pygame.time.Clock()
     
@@ -103,7 +103,7 @@ class Window:
             return
         self.title = title
         title += ' %s' % self.makeTitle(self.world)
-        textsurface = self.myfont.render(title, False, self.defaultColour)
+        textsurface = self.myfont.render(title, False, self.default_color)
         self.screen.blit(textsurface,(0,0))
         #if pygame.display.get_caption()[0] != title:
         #    pygame.display.set_caption(title)
