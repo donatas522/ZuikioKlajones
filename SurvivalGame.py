@@ -182,6 +182,8 @@ class Wolf(setup.Agent):
         next_states = self.getNextStates()
         action = self.chooseAction(state, next_states)
         new_cell = next_states[action]
+        #pasukimas duoda reflection tipo nauja cell.
+        #while ciklas in case po reflection vel siena bus.
         while new_cell.wall:         
             if action in (0, 5, 6):
                 self.direction = (int) (self.direction - 1) % self.directions
@@ -396,24 +398,32 @@ class Rabbit(setup.Agent):
     def goDirection(self, target_direction):
         new_direction = target_direction
         target_cell = self.getNextStates()[new_direction]
-        if getattr(target_cell, 'wall', False): # o negalima ___ if target_cell.wall == False: ? ar butu skirtumas?
+        while target_cell.wall: # o negalima ___ if target_cell.wall == False: ? ar butu skirtumas?
+            
+            #if new_direction in (1,2,3):
+            #    new_direction += 1
+            #elif new_direction in (5,6,7):
+            #    new_direction -= 1
+            #elif new_direction == 0:
+            #    new_direction = 4
+            #elif new_direction in (0,4):
+            #    new_direction = (int) (new_direction + self.actions/2) % self.actions     
             x = self.direction_vectors[target_direction][0]
             y = self.direction_vectors[target_direction][1]
-            if target_cell.x == (0 or self.world.width-1):
+            if target_cell.x == 0 or target_cell.x == (self.world.width-1):
                x = -x
-            if target_cell.y == (0 or self.world.height-1):
+            if target_cell.y == 0 or target_cell.y == (self.world.height-1):
                y = -y
-            new_direction = self.direction_vectors.index((x,y))
-            self.cell = self.getNextStates()[new_direction]
+            new_direction = self.direction_vectors.index((x,y))   
+            target_cell = self.getNextStates()[new_direction]
             print("Rabbit hit a wall.")
-            return False
+            
             
             #if wall returns only false, rabbit might "decide" to stay near the walls
             #In which way change direction?
             #do-while change direction while cell.wall == true?
             # klausimas, ar rabbit aplamai rinktusi krypti i siena? jei jau taip atsitiktu, cia padaryta paprasta inversija sienos atzvilgiu, veikia ir kampui. Cia uztenka vieno perskaiciavimo, t.y. naujai krypciai new_direction tikrinimo nereikia, nes jos kryptimi cell visada bus laisva
-        self.cell = self.getNextStates()[new_direction]
-        return True
+        self.cell = target_cell# self.getNextStates()[new_direction]
     
     def getNextStates(self):
         opts = [self.getCellForAction(action) for action in range(self.actions)]
@@ -431,13 +441,13 @@ class Rabbit(setup.Agent):
         
         # check for grid violation. Gali but, kad neprireiks ju
         if x2 < 0:
-            x2 += self.world.width
+            x2 = 0
         if y2 < 0:
-            y2 += self.world.height
-        if x2 >= self.world.width:
-            x2 -= self.world.width
-        if y2 >= self.world.height:
-            y2 -= self.world.height
+            y2 = 0
+        if x2 >= (self.world.width -1):
+            x2 = self.world.width - 1
+        if y2 >= (self.world.height -1):
+            y2 = self.world.height - 1
         
         return (x2, y2)
                     
