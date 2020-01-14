@@ -8,7 +8,7 @@ class Window:
     paused = False
     title = ''
     updateEvery = 1
-    delay = 10
+    delay = 1
     clock = pygame.time.Clock()
     
     def __init__(self):
@@ -42,6 +42,8 @@ class Window:
                         self.screen.fill(c, (cell.x*self.size, cell.y*self.size, self.size, self.size))
                     except:
                         print('Error: invalid color:', c)
+                rect = pygame.Rect(cell.x*self.size, cell.y*self.size, self.size, self.size)
+                pygame.draw.rect(self.screen, pygame.Color(cfg.wall_color), rect, 2)
         
     def getColour(self, obj):
         c = getattr(obj, 'colour', None)
@@ -60,12 +62,21 @@ class Window:
             return
         if self.world.age % self.updateEvery != 0 and not self.paused:
             return
-        #self.setTitle(self.title)
+        self.setTitle(self.title)
         for event in pygame.event.get():
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 sys.exit()
             elif event.type == pygame.QUIT:
-                sys.exit()             
+                sys.exit()
+                
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_PAGEDOWN:
+                if self.delay > 0:
+                    self.delay -= 1
+                
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_PAGEUP:
+                self.delay += 1
+                if self.delay > 20:
+                    self.delay = 20             
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 self.pause()
         pygame.display.flip()
@@ -77,3 +88,29 @@ class Window:
         self.paused = not self.paused
         while self.paused:
             self.update()
+            
+    def setTitle(self, title):
+        if not self.activated:
+            return
+        self.title = title
+        title += ' %s' % self.makeTitle(self.world)
+        if pygame.display.get_caption()[0] != title:
+            pygame.display.set_caption(title)
+    
+    def makeTitle(self, world):
+        text = 'age: %d' % world.age
+        extra = []
+        if world.rabbit_win:
+            extra.append('energy=%d' % world.rabbit_win)
+        if world.wolf_win:
+            extra.append('wolf_win=%d' % world.wolf_win)
+        if self.paused:
+            extra.append('paused')
+        if self.updateEvery != 1:
+            extra.append('skip=%d' % self.updateEvery)
+        if self.delay > 0:
+            extra.append('delay=%d' % self.delay)
+
+        if len(extra) > 0:
+            text += ' [%s]' % ', '.join(extra)
+        return text
