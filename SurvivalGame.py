@@ -182,7 +182,7 @@ class Wolf(setup.Agent):
         next_states = self.getNextStates()
         action = self.chooseAction(state, next_states)
         new_cell = next_states[action]
-        if new_cell.wall:         
+        while new_cell.wall:         
             if action in (0, 5, 6):
                 self.direction = (int) (self.direction - 1) % self.directions
             if action in (1, 3, 4):
@@ -205,6 +205,8 @@ class Wolf(setup.Agent):
         if 3 in state: # if rabbit is visible, move towards rabbit
             return self.bestActionTowardsRabbit(next_states, rabbit.cell) # rabbit objektas is main?
         else:
+            if self.last_action != 0 or self.last_action != 1:
+                return 1
             if self.last_action == 0 or self.last_action == 1:
                 return self.last_action
             return random.randint(0,1) # rabit is not in sight, just wander
