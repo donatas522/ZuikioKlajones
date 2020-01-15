@@ -368,7 +368,7 @@ class Rabbit(setup.Agent):
                 if self.last_state is not None:
                     self.ai.learnQ(self.last_state, self.last_action, state, reward)
                 
-                self.energy -= self.wolf_encounter           
+                self.energy += self.wolf_encounter           
                 moveTowardsCenter(self)
         
         #jei vilkas uzpuole zuiki, kontuzintas zuikis obuolio nepaims :(       
@@ -382,7 +382,7 @@ class Rabbit(setup.Agent):
                     #new location for apple with average distance
                     apple.cell = pickRandomLocationWithAverage()
         #just move
-        else:
+        elif reward != self.wolf_encounter:
             self.energy += reward
             if self.last_state is not None:
                 self.ai.learnQ(self.last_state, self.last_action, state, reward)
@@ -497,20 +497,22 @@ for wolf in wolves:
 
 world.addAgent(rabbit, cell=world.pickRandomLocation()) # tegul visi agentai pakraunami ant neuzimtu langeliu
 
+#======Settings before launch========
 world.UIdraw = False
 save = True
-final_age = 600000
+final_age = 200000
 rabbit.explore = True
-rabbit.ai.loadAI(f'N{cfg.N}_M{cfg.M}_at_age_600000')
+#3.6kk
+rabbit.ai.loadAI(f'N{cfg.N}_M8_at_age_200000')
 rabbit.ai.epsilon = cfg.epsilon
-
+#==============
 while 1:
     world.updateWorld(rabbit.energy, rabbit.eaten, rabbit.starved, rabbit.rabbit_age)
     if (world.age % 1000) == 0:
         print(f'world_age: {world.age} epsilon: {rabbit.ai.epsilon} starved: {rabbit.starved}  rabbit_age: {world.rabbit_age}')
     if save:
         if world.age == final_age:
-            rabbit.ai.saveAI(f'N{cfg.N}_M{cfg.M}_at_age_{world.age}')
+            rabbit.ai.saveAI(f'N{cfg.N}_M{cfg.M}_at_age_400000')
             break       
     #if world.rabbit_age > cfg.N:
     #    print(f'rabbit_age: {world.rabbit_age} world_age: {world.age}')

@@ -42,7 +42,7 @@ class QLearn:
             self.Q[(state1, action)] = reward
         else:
             next_max_Q = max([self.getQ(state2, act) for act in self.actions])
-            self.Q[(state1, action)] = old_Q + self.alpha * (reward + self.gamma * next_max_Q)
+            self.Q[(state1, action)] = (1- self.alpha) * old_Q + self.alpha * (reward + self.gamma * next_max_Q)
     
     # Exploration rate decay, applied after each episode
     def epsilonDecay(self, episode):

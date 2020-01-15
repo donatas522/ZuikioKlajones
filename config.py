@@ -1,6 +1,7 @@
 #always survice:
 #rows,cols = 7, M=5 apples_number = 25
-
+#survive rows x cols age
+#rows,cols = 13, M=8 apples_number = 25 
 
 # ----- World Settings -----
 rows = 13 # world rows #13
@@ -41,16 +42,18 @@ class_lookdist = {'Apple': apple_lookdist, 'Rabbit': rabbit_lookdist, 'Wolf': wo
 
 
 # ----- Learning Parameters -----
-alpha = 0.8 # learning rate, 0 < alpha < 1
-gamma = 0.6 # discount rate, 0 < gamma < 1
-epsilon = 0.2 # starting exploration rate
-min_epsilon = 0.5# min exploration rate
+alpha = 0.5 # learning rate, 0 < alpha < 1
+gamma = 0.2 # discount rate, 0 < gamma < 1
+epsilon = 0.5# starting exploration rate
+#====USED ONLY WHEN EXPLORING==================
+min_epsilon = 0.8# min exploration rate
 epsilon_decay = 0.0005 # exploration decay rate
+#==============================================
 num_episodes = 10000
 max_steps_per_episode = 100
 
 
 # ----- Reward/Punishement -----
 eat_apple = M
-eaten_by_wolf = N//4
+eaten_by_wolf = -N//4
 move = -1
