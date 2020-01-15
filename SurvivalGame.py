@@ -498,12 +498,12 @@ for wolf in wolves:
 world.addAgent(rabbit, cell=world.pickRandomLocation()) # tegul visi agentai pakraunami ant neuzimtu langeliu
 
 #======Settings before launch========
-world.UIdraw = False
+world.UIdraw = True
 save = True
-final_age = 200000
-rabbit.explore = True
+final_age = 400000
+#rabbit.explore = True
 #3.6kk
-rabbit.ai.loadAI(f'N{cfg.N}_M8_at_age_200000')
+rabbit.ai.loadAI(f'N{cfg.N}_M{cfg.M}_at_age_800000')
 rabbit.ai.epsilon = cfg.epsilon
 #==============
 while 1:
@@ -512,7 +512,5 @@ while 1:
         print(f'world_age: {world.age} epsilon: {rabbit.ai.epsilon} starved: {rabbit.starved}  rabbit_age: {world.rabbit_age}')
     if save:
         if world.age == final_age:
-            rabbit.ai.saveAI(f'N{cfg.N}_M{cfg.M}_at_age_400000')
+            rabbit.ai.saveAI(f'N{cfg.N}_M{cfg.M}_at_age_800000')
             break       
-    #if world.rabbit_age > cfg.N:
-    #    print(f'rabbit_age: {world.rabbit_age} world_age: {world.age}')

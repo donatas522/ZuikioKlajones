@@ -21,7 +21,7 @@ class Window:
     def activate(self, size=size):
         self.size = size
         pygame.init()
-        self.myfont = pygame.font.SysFont('Comic Sans MS', 12)
+        self.myfont = pygame.font.SysFont('Comic Sans MS', 14)
         w = (cfg.cols+2) * size
         h = (cfg.rows+2) * size
         self.screen =  pygame.display.set_mode((w, h))
