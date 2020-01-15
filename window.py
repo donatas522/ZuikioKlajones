@@ -117,7 +117,9 @@ class Window:
         if world.rabbit_starved:
             extra.append('starved=%d' % world.rabbit_starved)
         if world.wolf_win:
-            extra.append('wolf_win=%d' % world.wolf_win)      
+            extra.append('wolf_win=%d' % world.wolf_win)
+        if world.rabbit_age:
+            extra.append('rabbit_age=%d' % world.rabbit_age)      
         if self.update_every != 1:
             extra.append('skip=%d' % self.update_every)
         if self.delay > 0:

@@ -2,6 +2,7 @@
 import random
 import config as cfg
 import numpy as np
+import pickle
 
 
 class QLearn:
@@ -46,3 +47,20 @@ class QLearn:
     # Exploration rate decay, applied after each episode
     def epsilonDecay(self, episode):
         self.epsilon = self.min_epsilon + (1 - self.min_epsilon) * np.exp(-self.epsilon_decay * episode)
+
+    def saveAI(self, filename):
+        with open(f'{filename}.pkl', 'wb') as handle:
+            data = [self.Q, self.epsilon, self.epsilon_decay,
+                    self.alpha, self.gamma, self.min_epsilon, self.actions]
+            pickle.dump(data, handle, protocol=pickle.HIGHEST_PROTOCOL)
+            
+    def loadAI(self, filename):
+        with open(f'{filename}.pkl', 'rb') as handle:
+            data = pickle.load(handle)
+            self.Q = data[0]
+            self.epsilon = data[1]
+            self.epsilon_decay = data[2]
+            self.alpha = data[3]
+            self.gamma = data[4]
+            self.min_epsilon = data[5]
+            self.actions = data[6]

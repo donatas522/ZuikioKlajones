@@ -144,15 +144,17 @@ def moveTowardsCenter(agent, verbose=False):
                 return
 
 
-def pickRandomLocationWithAverage(cell):
+def pickRandomLocationWithAverage():
     #not implemented
     #need to create new cell object and assign x y in world 
+    x = int(world.width /2)
+    y = int(world.height/2)
     theta = 2 * math.pi * random.uniform(0, 1)       #angle is uniform
-    r = cfg.average_distance * cfg.M * math.sqrt(random.uniform(0, 1))   #radius proportional to sqrt(U), U~U(0,1) */
+    r = cfg.average_distance * cfg.M #* math.sqrt(random.uniform(0, 1))   #radius proportional to sqrt(U), U~U(0,1) */
     dx = int(r*math.cos(theta))
     dy = int(r*math.sin(theta))
-    x2 = cell.x + dx
-    y2 = cell.y + dy
+    x2 = x + dx
+    y2 = y + dy
     if x2 <= 0:
         x2 = 1
     if y2 <= 0:
@@ -348,6 +350,7 @@ class Rabbit(setup.Agent):
         self.M = cfg.eat_apple
         self.wolf_encounter = cfg.eaten_by_wolf
         self.eaten = 0
+        self.rabbit_age = 0
         self.starved = 0
         self.direction_vectors = [(0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1)]
         print('rabbit initialized.')
@@ -358,7 +361,7 @@ class Rabbit(setup.Agent):
         state = self.calcState()
         #because of movement reward -1 by default will follow
         reward = cfg.move
-        
+        self.rabbit_age += 1 
         #observe the reward and update the Q-value
         if self.cell == wolf.last_cell: # gal geriau lyginti x ir y?
             self.eaten += 1
@@ -376,12 +379,14 @@ class Rabbit(setup.Agent):
             #rabbit survived, enough energy left. Move rabbit towards center
             moveTowardsCenter(self)# moveTowardsCenter(self)
                
-        elif self.cell == apple.cell: # gal geriau lyginti x ir y?
-            self.energy += self.M
-            reward = self.M
-            if self.last_state is not None:
-                self.ai.learnQ(self.last_state, self.last_action, state, reward)
-            apple.cell = pickRandomLocationWithAverage(apple.cell)
+        elif any(self.cell == apple.cell for apple in apples): # gal geriau lyginti x ir y?
+            for apple in apples:
+                if self.cell == apple.cell:                    
+                    self.energy += self.M
+                    reward = self.M
+                    if self.last_state is not None:
+                        self.ai.learnQ(self.last_state, self.last_action, state, reward)
+                    apple.cell = self.world.pickRandomLocation()#WithAverage()
         
         else:
             self.energy += reward
@@ -390,6 +395,7 @@ class Rabbit(setup.Agent):
         
         
         if self.energy <= 0:
+            self.rabbit_age = 0
             self.starved += 1
             self.last_state = None
             self.cell = self.world.pickRandomLocation()
@@ -401,7 +407,7 @@ class Rabbit(setup.Agent):
         # Choose a new action and execute it
         # What state after reward observation?
         state = self.calcState()
-        print(state)
+        #print(state)
         action = self.ai.chooseAction(state)
         self.last_state = state
         self.last_action = action
@@ -432,7 +438,7 @@ class Rabbit(setup.Agent):
                y = -y
             new_direction = self.direction_vectors.index((x,y))   
             target_cell = self.getNextStates()[new_direction]
-            print("Rabbit hit a wall.")
+            #print("Rabbit hit a wall.")
             
             
             #if wall returns only false, rabbit might "decide" to stay near the walls
@@ -487,17 +493,34 @@ class Rabbit(setup.Agent):
 
 
 world = setup.World(cell=setup.Cell)
+apples = []
+for i in range(cfg.apples_number):
+    apples.append(Apple())
+    
 
-apple = Apple() # turi buti multiple Apple objektai
+
 wolf = Wolf() # gali buti multiple Wolf objektai
 rabbit = Rabbit()
 
 
 # svarbi agentu pakrovimo tvarka, nes pagal ja paskui updatinasi agentu busenos
-world.addAgent(apple, cell=world.pickRandomLocation())
+for apple in apples:
+    world.addAgent(apple, cell=world.pickRandomLocation())#WithAverage())
+
 world.addAgent(wolf, cell=world.pickRandomLocation())
 world.addAgent(rabbit, cell=world.pickRandomLocation()) # tegul visi agentai pakraunami ant neuzimtu langeliu
 
-#world.UIdraw = False
+world.UIdraw = False
+save = True
+final_age = 100000
+rabbit.ai.loadAI(f'N{cfg.N}_M{cfg.M}_at_age_6000')
+
 while 1:
-    world.updateWorld(rabbit.energy, rabbit.eaten, rabbit.starved)
+    world.updateWorld(rabbit.energy, rabbit.eaten, rabbit.starved, rabbit.rabbit_age)
+    if (world.age % 1000) == 0:
+        print(f'epsilon: {rabbit.ai.epsilon} world_age: {world.age}')
+    if save:
+        if world.age == final_age:
+            rabbit.ai.saveAI(f'N{cfg.N}_M{cfg.M}_at_age_{world.age}')       
+    #if world.rabbit_age > cfg.N:
+    #    print(f'rabbit_age: {world.rabbit_age} world_age: {world.age}')

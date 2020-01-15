@@ -81,6 +81,7 @@ class World:
         self.wolf_win = None
         self.rabbit_energy = None
         self.rabbit_starved = None
+        self.rabbit_age = 0
         
         self.resetWorld()
         self.loadWorld()
@@ -133,7 +134,7 @@ class World:
         return self.grid[y][x]
     
     
-    def updateWorld(self, rabbit_energy=None, wolf_win=None, rabbit_starved=None):
+    def updateWorld(self, rabbit_energy=None, wolf_win=None, rabbit_starved=None, rabbit_age=None):
         if hasattr(self.Cell, 'update'):
             for a in self.agents: # cia galimai niekada neieina algortimas (kol kas)
                 a.update()
@@ -157,7 +158,9 @@ class World:
             self.wolf_win = wolf_win
         if rabbit_starved:
             self.rabbit_starved = rabbit_starved
-        #Tkinter visual    
+        #Tkinter visual 
+        if rabbit_age:
+            self.rabbit_age = rabbit_age   
         if self.UIdraw:
             self.display.update()
         self.age += 1
