@@ -1,12 +1,15 @@
+#always survice:
+#rows,cols = 7, M=5 apples_number = 25
+
 
 # ----- World Settings -----
-rows = 10 # world rows
-cols = 10 # world columns
+rows = 13 # world rows #13
+cols = 13 # world columns #13
 cell_size = 50
 N = rows * cols # number of world cells
-M = 10 # energy from apple
-apples_number = 4
-average_distance = 0.8 * M
+M = 8 # energy from apple #8
+apples_number = 25 #20
+wolves_number = 1
 directions = 8 # neigbouring cells
 background_color = '#FFFFFF' # white
 wall_color = '#000000' # black
@@ -38,11 +41,11 @@ class_lookdist = {'Apple': apple_lookdist, 'Rabbit': rabbit_lookdist, 'Wolf': wo
 
 
 # ----- Learning Parameters -----
-alpha = 0.1 # learning rate, 0 < alpha < 1
-gamma = 0.9 # discount rate, 0 < gamma < 1
-epsilon = 1 # starting exploration rate
-min_epsilon = 0.01 # min exploration rate
-epsilon_decay = 0.001 # exploration decay rate
+alpha = 0.8 # learning rate, 0 < alpha < 1
+gamma = 0.6 # discount rate, 0 < gamma < 1
+epsilon = 0.2 # starting exploration rate
+min_epsilon = 0.5# min exploration rate
+epsilon_decay = 0.0005 # exploration decay rate
 num_episodes = 10000
 max_steps_per_episode = 100
 

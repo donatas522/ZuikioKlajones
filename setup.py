@@ -13,7 +13,6 @@ def makeDisplay(world):
     return d
 
 
-
 class Cell:
     def __init__(self):
         self.wall = False
@@ -25,20 +24,9 @@ class Cell:
         else:
             return cfg.background_color
     
-    
     def makeWall(self):
         self.wall = True
     
-    
-    # idomu, cia gal galima tiesiog paprasta funkcija parasyti kokioj World klasej? nes dabar viskas vyksta per Cell klases neegzistuojanti atributa neighbors. Aisku, cia validu, tiesiog norisi intuityviau, juolab, kad cia susije su grido struktura
-'''
-    def __getattr__(self, key):
-        if key == 'neighbors':
-            opts = [self.world.getNeighbor(self.x, self.y, direction) for direction in range(self.world.directions)]
-            next_states = tuple(self.world.grid[y][x] for (x,y) in opts)
-            return next_states
-        raise AttributeError(key)
-'''
 
 
 class Agent:
@@ -58,14 +46,11 @@ class World:
     def __init__(self, cell=None):
         if cell is None:
             cell = Cell
-        self.Cell = cell
-        
+        self.Cell = cell      
         # pygame
         self.display = makeDisplay(self)
-        self.UIdraw = True
-        
+        self.UIdraw = True    
         self.grid = None
-        #self.dictBackup = None # galimai neprireiks
         self.agents = []
         self.age = 0
         self.directions = cfg.directions # neigbouring cells
@@ -76,7 +61,6 @@ class World:
         self.height = cfg.rows + 2 # + 2 because of walls from both sides
         self.width = cfg.cols + 2 
         
-        self.image = None
         self.rabbit_win = None
         self.wolf_win = None
         self.rabbit_energy = None
@@ -90,7 +74,6 @@ class World:
     
     def resetWorld(self):
         self.grid = [[self.makeCell(i, j) for i in range(self.width)] for j in range(self.height)]
-        #self.dictBackup = [[{} for i2 in range(self.width)] for j2 in range(self.height)] # gali but, kad neprieiks
         self.agents = []
         self.age = 0
     
@@ -114,15 +97,10 @@ class World:
             self.grid[0][i].makeWall()
             self.grid[self.height-1][i].makeWall()
     
-    
-    #def getCell(self, x, y):
-    #    return self.grid[y][x]
-    
-    
     def getCell(self, x, y):
         w = self.width
         h = self.height
-        
+      
         if x < 0: x = 0
         elif x > w-1: x = w-1
         else: pass # 0 <= x <= w-1
@@ -135,30 +113,18 @@ class World:
     
     
     def updateWorld(self, rabbit_energy=None, wolf_win=None, rabbit_starved=None, rabbit_age=None):
-        if hasattr(self.Cell, 'update'):
-            for a in self.agents: # cia galimai niekada neieina algortimas (kol kas)
-                a.update()
-            #tkinter update visual
-            #self.display.redraw()
-        else:
-            for a in self.agents:
-                #old_cell = a.cell # kol kas nereikia
-                a.update()
-            if self.UIdraw:
-                self.display.redraw()           
-                #update Tkinter visual
-                #if old_cell != a.cell:
-                #    self.display.redraw_cell(old_cell.x, old_cell.y)
-                #    
-                #self.display.redraw_cell(a.cell.x, a.cell.y)
-        
+        #update each agent in world
+        for a in self.agents:
+            a.update()
+        if self.UIdraw:
+            self.display.redraw()
+    
         if rabbit_energy:
             self.rabbit_energy = rabbit_energy
         if wolf_win:
             self.wolf_win = wolf_win
         if rabbit_starved:
             self.rabbit_starved = rabbit_starved
-        #Tkinter visual 
         if rabbit_age:
             self.rabbit_age = rabbit_age   
         if self.UIdraw:
@@ -166,7 +132,6 @@ class World:
         self.age += 1
     
     
-    # kol kas gerai, bet dar gal teks grizti. jei cell=None, tai nera tikrinimo, ar agentas nepastatomas i jau uzimta cell. problema apeinama, jei pridedant agentui, uzduodam cell=self.pickRandomLocation()
     def addAgent(self, agent, x=None, y=None, cell=None, direction=None):
         self.agents.append(agent) # list of agents in the world
         if cell is not None:
@@ -192,7 +157,7 @@ class World:
         return direction
     
     
-    def pickRandomLocation(self): # tikriausiai nereikia tikrinimo, ar siena, nes sienos indekso niekada negaus
+    def pickRandomLocation(self):
         while True:
             x = random.randrange(1, self.width-1)
             y = random.randrange(1, self.height-1)
