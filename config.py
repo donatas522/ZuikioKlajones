@@ -9,7 +9,7 @@ cols = 7 # world columns #13
 cell_size = 70
 N = rows * cols # number of world cells
 M = 5 # energy from apple #8
-apples_number = 7 #20
+apples_number = 2 #20
 wolves_number = 1
 directions = 8 # neigbouring cells
 background_color = '#FFFFFF' # white
@@ -42,11 +42,11 @@ class_lookdist = {'Apple': apple_lookdist, 'Rabbit': rabbit_lookdist, 'Wolf': wo
 
 
 # ----- Learning Parameters -----
-alpha = 0.8 # learning rate, 0 < alpha < 1
-gamma = 0.7 # discount rate, 0 < gamma < 1
-epsilon = 0.1# starting exploration rate
+alpha = 0.1 # learning rate, 0 < alpha < 1
+gamma = 0.4 # discount rate, 0 < gamma < 1
+epsilon = 0.5# starting exploration rate
 #====USED ONLY WHEN EXPLORING==================
-min_epsilon = 0.8# min exploration rate
+min_epsilon = 0.7# min exploration rate
 epsilon_decay = 0.0005 # exploration decay rate
 #==============================================
 num_episodes = 10000
